@@ -5,10 +5,12 @@
 CC = clang
 LD = clang
 
-all: lemon
+all: lemon.exe
 
-lemon: lemon.c
+lemon.exe: lemon.c
 	$(CC) -O2 -o $@ $<
 
+clean:
+	rm -fv lemon.exe
 
-
+.PHONY: all clean

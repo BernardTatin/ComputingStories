@@ -2,5 +2,9 @@
 
 docs/
 
+*.exe
 calc
+calc.h
+calc.c
+
 
