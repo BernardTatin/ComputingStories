@@ -13,10 +13,10 @@ all: $(TARGET)
 $(TARGET).c: $(TARGET).y
 	$(PACKCC) $<
 
-$(TARGET): $(TARGET).c
+$(TARGET): $(TARGET).c $(TARGET)-tools.h
 	$(CC) $(COPT) -o $@ $<
 
 clean:
-	rm $(TARGET) $(TARGET).h $(TARGET).c
+	rm -fv $(TARGET) $(TARGET).h $(TARGET).c
 
 .PHONY: all clean

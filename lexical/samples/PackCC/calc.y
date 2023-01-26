@@ -3,10 +3,13 @@
 %source {
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "calc-tools.h"
 }
 
-statement <- _ e:expression _ EOL { printf(">= %6d\n>: ", e); }
-           / ( !EOL . )* EOL      { printf("error\n>: "); }
+# rules
+statement <- _ e:expression _ EOL { show_result(e, $0); }
+           / ( !EOL . )* EOL      { printf("error\n%s ", PROMPT_USER); }
 
 expression <- e:term { $$ = e; }
 
@@ -16,7 +19,7 @@ term <- l:term _ '+' _ r:factor { $$ = l + r; }
 
 factor <- l:factor _ '*' _ r:unary { $$ = l * r; }
         / l:factor _ '/' _ r:unary { $$ = l / r; }
-        / l:factor _ '%' _ r:unary { $$ = l % r; }
+        / l:factor _ '%' _ r:unary { $$ = l % r; } # BT
         / e:unary                  { $$ = e; }
 
 unary <- '+' _ e:unary { $$ = +e; }
@@ -31,12 +34,13 @@ EOL    <- '\n' / '\r\n' / '\r' / ';'
 
 %%
 int main() {
+	printf("\nsuper calc, version %s (%s)\n\n", calc_version, __DATE__);
+	printf("%s ", PROMPT_USER);
+
     calc_context_t *ctx = calc_create(NULL);
-	printf("super calc, version 0.0.1 (%s)\n", __DATE__);
-	printf("Note: sizeof(int) = %lu\n", sizeof(int));
-	printf(">: ");
     while (calc_parse(ctx, NULL));
     calc_destroy(ctx);
+
 	printf("\n");
     return 0;
 }
