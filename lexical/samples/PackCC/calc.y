@@ -3,6 +3,7 @@
 %source {
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "calc-tools.h"
 }
@@ -27,17 +28,29 @@ unary <- '+' _ e:unary { $$ = +e; }
        / e:primary     { $$ = e; }
 
 primary <- < [0-9]+ >               { $$ = atoi($1); }
-		 / 'square' _ '(' _ e:expression _ ')' { $$ = (e) * (e); } # BT
-		 / 'gcd' _ '(' _ a:expression _ ',' _ b:expression _ ')' { $$ = gcd(a, b); }
+		 / 'square' _ '(' _ e:expression _ ')' {
+		 	$$ = (e) * (e);
+		 } # BT
+		 / 'gcd' _ '(' _ a:expression _ ',' _ b:expression _ ')' {
+		 	$$ = gcd(a, b);
+		 }
          / '(' _ e:expression _ ')' { $$ = e; }
 
 _      <- [ \t]*
 EOL    <- '\n' / '\r\n' / '\r' / ';'
 
 %%
-int main() {
-	printf("\nsuper calc, version %s (%s)\n\n", calc_version, __DATE__);
-	printf("%s ", PROMPT_USER);
+int main(int argc, char **argv) {
+	bool quiet = false;
+	if (argc == 2) {
+		if (strcmp(argv[1], "-q") == 0) {
+			quiet = true;
+		}
+	}
+	if (!quiet) {
+		printf("\nsuper calc, version %s (%s)\n\n", calc_version, __DATE__);
+		printf("%s ", PROMPT_USER);
+	}
 
     calc_context_t *ctx = calc_create(NULL);
     while (calc_parse(ctx, NULL));
