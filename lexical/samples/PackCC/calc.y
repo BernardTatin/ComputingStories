@@ -27,6 +27,8 @@ unary <- '+' _ e:unary { $$ = +e; }
        / e:primary     { $$ = e; }
 
 primary <- < [0-9]+ >               { $$ = atoi($1); }
+		 / 'square' _ '(' _ e:expression _ ')' { $$ = (e) * (e); } # BT
+		 / 'gcd' _ '(' _ a:expression _ ',' _ b:expression _ ')' { $$ = gcd(a, b); }
          / '(' _ e:expression _ ')' { $$ = e; }
 
 _      <- [ \t]*

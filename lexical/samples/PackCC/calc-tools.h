@@ -27,4 +27,6 @@ static inline void show_result(const int result, const char *line) {
 	}
 }
 
+int gcd(const int a, const int b)  __attribute__((pure));
+
 #endif // __CALC_TOOLS_H__
