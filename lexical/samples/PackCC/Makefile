@@ -19,4 +19,9 @@ $(TARGET): $(TARGET).c $(TARGET)-tools.h $(TARGET)-tools.c
 clean:
 	rm -fv $(TARGET) $(TARGET).h $(TARGET).c
 
-.PHONY: all clean
+test: $(TARGET)
+	./$(TARGET) -q < tests/input > output
+	diff output tests/reference
+	rm -fv output
+
+.PHONY: all clean test

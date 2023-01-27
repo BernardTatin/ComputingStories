@@ -1,15 +1,57 @@
 %prefix "calc"
+%auxil "CalcConfig *"
 
-%source {
+%header {
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
 #include "calc-tools.h"
+
+typedef struct _CalcConfig {
+	bool is_quiet;
+	char *prompt_user;
+	char *prompt_calc;
+} CalcConfig;
+
+}
+
+%source {
+
+CalcConfig *create_auxiliary(const bool is_quiet) {
+	CalcConfig *conf = (CalcConfig *)malloc(sizeof(CalcConfig));
+	if (conf != NULL) {
+		conf->is_quiet = is_quiet;
+		if (is_quiet) {
+			conf->prompt_user = PROMPT_EMPTY;
+			conf->prompt_calc = PROMPT_EMPTY;
+		} else {
+			conf->prompt_user = PROMPT_USER;
+			conf->prompt_calc = PROMPT_CALC;
+		}
+	}
+	return conf;
+}
+
+void destroy_auxiliary(CalcConfig *conf) {
+	if (conf != NULL) {
+		free(conf);
+	}
+}
+
+void parse(const bool is_quiet) {
+	CalcConfig *conf = create_auxiliary(is_quiet);
+    calc_context_t *ctx = calc_create(conf);
+    while (calc_parse(ctx, NULL))
+		;
+	destroy_auxiliary(conf);
+    calc_destroy(ctx);
+}
+
 }
 
 # rules
-statement <- _ e:expression _ EOL { show_result(e, $0); }
+statement <- _ e:expression _ EOL { show_result(e, $0, auxil->is_quiet); }
            / ( !EOL . )* EOL      { printf("error\n%s ", PROMPT_USER); }
 
 expression <- e:term { $$ = e; }
@@ -52,10 +94,11 @@ int main(int argc, char **argv) {
 		printf("%s ", PROMPT_USER);
 	}
 
-    calc_context_t *ctx = calc_create(NULL);
-    while (calc_parse(ctx, NULL));
-    calc_destroy(ctx);
+	parse(quiet);
 
-	printf("\n");
+	if (!quiet) {
+		printf("\n");
+	}
+
     return 0;
 }
