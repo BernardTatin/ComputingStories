@@ -14,16 +14,36 @@
 #define MAX_LOOPS 120
 
 // la structure à stocker
-struct iovec {
+typedef struct _iovec {
 	void  *iov_base; // [XSI] Base address of I/O memory region
 	size_t iov_len;  // [XSI] Size of region iov_base points to
-};
+} iovec;
 
-// la fonction de comparaison nécessaire au tri
+
+// la fonction de comparaison nécessaire au tri et à la recherche
 int my_cmp_cb (struct rb_tree *self, struct rb_node *node_a, struct rb_node *node_b) {
-    struct iovec *a = (struct iovec *) node_a->value;
-    struct iovec *b = (struct iovec *) node_b->value;
-    return (a->iov_len > b->iov_len) - (a->iov_len < b->iov_len);
+    iovec *a = (iovec *) node_a->value;
+    iovec *b = (iovec *) node_b->value;
+    return (a->iov_len < b->iov_len) - (a->iov_len > b->iov_len);
+}
+
+unsigned long all_fuzzy[MAX_LOOPS];
+
+unsigned long fuzzy_ul(const unsigned long kmin, const unsigned long kmax) {
+	unsigned long k = (unsigned long)random() % kmax;
+	unsigned long r = 0;
+	static unsigned long unity = 1;
+	while (all_fuzzy[(int)k] == 0) {
+		if (unity == -1 && (k + unity) > kmax - 1) {
+			k = kmax - 1;
+		} else {
+			k = (k + unity) % kmax;
+		}
+	}
+	unity *= -1;
+	r = all_fuzzy[(int)k];
+	all_fuzzy[(int)k] = 0;
+	return r;
 }
 
 void test(const int loops) {
@@ -31,34 +51,37 @@ void test(const int loops) {
 	fprintf(stdout, "The tree: create\n");
 	if (tree) {
 
-		// Use the tree here...
+		// Fill the tree here...
 		for (unsigned long i = 1; i <= (unsigned long)loops; i++) {
-			struct iovec *v = malloc(sizeof *v);
-			v->iov_base = (void *) i;
-			v->iov_len = i * i;
+			iovec *v = malloc(sizeof *v);
+			unsigned long k = fuzzy_ul(MIN_LOOPS, (unsigned int)loops);
+			v->iov_base = (void *) k;
+			v->iov_len = k * k;
 
-			printf("- %p %zu\n", v->iov_base, v->iov_len);
+			printf("- %08p %6zu\n", v->iov_base, v->iov_len);
 			// Default insert, which allocates internal rb_nodes for you.
 			rb_tree_insert(tree, v);
 		}
 
-		// To f
+		// How to search
 		unsigned long to_find = 70UL;
-		struct iovec *f = rb_tree_find(tree, & (struct iovec) {
+		iovec *f = rb_tree_find(tree, & (iovec) {
 				.iov_base = (void *) to_find,
 				.iov_len = 49
 				});
 		if (f) {
-			fprintf(stdout, "found iovec(.iov_base = %p, .iov_len = %zu)\n", f->iov_base, f->iov_len);
+			fprintf(stdout, "found iovec(.iov_base = %08p, .iov_len = %6zu)\n",
+					f->iov_base, f->iov_len);
 		} else {
 			printf("not found\n");
 		}
 
+		// How to iterate over the tree
 		fprintf(stdout, "The tree: show\n");
 		struct rb_iter *iter = rb_iter_create();
 		if (iter) {
-			for (struct iovec *v = rb_iter_last(iter, tree); v; v = rb_iter_prev(iter)) {
-				printf("- %p %zu\n", v->iov_base, v->iov_len);
+			for (iovec *v = rb_iter_last(iter, tree); v; v = rb_iter_prev(iter)) {
+				printf("- %08p %6zu\n", v->iov_base, v->iov_len);
 			}
 			rb_iter_dealloc(iter);
 		}
@@ -80,6 +103,9 @@ int main(int argc, char **argv) {
 			l = MAX_LOOPS;
 		}
 		loops = l;
+	}
+	for (int i=0; i<MAX_LOOPS; i++) {
+		all_fuzzy[i] = (unsigned long)(i + 1);
 	}
 	test(loops);
 	return 0;
