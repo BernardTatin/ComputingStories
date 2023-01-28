@@ -14,7 +14,13 @@
 #define PROMPT_CALC ">="
 #define PROMPT_EMPTY ""
 
-static inline char last_char(const char *s) {
+typedef struct _CalcConfig {
+	bool is_quiet;
+	char *prompt_user;
+	char *prompt_calc;
+} CalcConfig;
+
+static inline char last_char(const char *s) __attribute__((pure)) {
 	size_t l = strlen(s);
 	return s[l - 1];
 }
@@ -38,5 +44,9 @@ static inline void show_result(const int result, const char *line, const bool is
 }
 
 int gcd(const int a, const int b)  __attribute__((pure));
+
+CalcConfig *create_auxiliary(const bool is_quiet);
+void destroy_auxiliary(CalcConfig *conf);
+void parse(const bool is_quiet);
 
 #endif // __CALC_TOOLS_H__

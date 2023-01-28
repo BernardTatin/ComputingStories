@@ -10,7 +10,7 @@ TARGET ?= calc
 
 all: $(TARGET)
 
-$(TARGET).c: $(TARGET).y
+$(TARGET).c: $(TARGET).peg
 	$(PACKCC) $<
 
 $(TARGET): $(TARGET).c $(TARGET)-tools.h $(TARGET)-tools.c
