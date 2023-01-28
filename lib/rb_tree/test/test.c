@@ -29,10 +29,11 @@ int my_cmp_cb (struct rb_tree *self, struct rb_node *node_a, struct rb_node *nod
 
 unsigned long all_fuzzy[MAX_LOOPS];
 
-unsigned long fuzzy_ul(const unsigned long kmin, const unsigned long kmax) {
+unsigned long fuzzy_ul(const unsigned long kmax) {
 	unsigned long k = (unsigned long)random() % kmax;
 	unsigned long r = 0;
-	static unsigned long unity = 1;
+	static long unity = 1;
+	// c'est dangereux, ici!
 	while (all_fuzzy[(int)k] == 0) {
 		if (unity == -1 && (k + unity) > kmax - 1) {
 			k = kmax - 1;
@@ -46,23 +47,26 @@ unsigned long fuzzy_ul(const unsigned long kmin, const unsigned long kmax) {
 	return r;
 }
 
+void fill_tree(struct rb_tree *tree, const unsigned long loops) {
+	for (unsigned long i = 1; i <= (unsigned long)loops; i++) {
+		iovec *v = malloc(sizeof *v);
+		unsigned long k = fuzzy_ul((unsigned int)loops);
+		v->iov_base = (void *) k;
+		v->iov_len = k * k;
+
+		printf("- %8p %6zu\n", v->iov_base, v->iov_len);
+		// Default insert, which allocates internal rb_nodes for you.
+		rb_tree_insert(tree, v);
+	}
+}
+
 void test(const int loops) {
 	struct rb_tree *tree = rb_tree_create(my_cmp_cb);
 	fprintf(stdout, "The tree: create\n");
 	if (tree) {
 
 		// Fill the tree here...
-		for (unsigned long i = 1; i <= (unsigned long)loops; i++) {
-			iovec *v = malloc(sizeof *v);
-			unsigned long k = fuzzy_ul(MIN_LOOPS, (unsigned int)loops);
-			v->iov_base = (void *) k;
-			v->iov_len = k * k;
-
-			printf("- %08p %6zu\n", v->iov_base, v->iov_len);
-			// Default insert, which allocates internal rb_nodes for you.
-			rb_tree_insert(tree, v);
-		}
-
+		fill_tree(tree, loops);
 		// How to search
 		unsigned long to_find = 70UL;
 		iovec *f = rb_tree_find(tree, & (iovec) {
@@ -70,7 +74,7 @@ void test(const int loops) {
 				.iov_len = 49
 				});
 		if (f) {
-			fprintf(stdout, "found iovec(.iov_base = %08p, .iov_len = %6zu)\n",
+			fprintf(stdout, "found iovec(.iov_base = %8p, .iov_len = %6zu)\n",
 					f->iov_base, f->iov_len);
 		} else {
 			printf("not found\n");
@@ -81,7 +85,7 @@ void test(const int loops) {
 		struct rb_iter *iter = rb_iter_create();
 		if (iter) {
 			for (iovec *v = rb_iter_last(iter, tree); v; v = rb_iter_prev(iter)) {
-				printf("- %08p %6zu\n", v->iov_base, v->iov_len);
+				printf("- %8p %6zu\n", v->iov_base, v->iov_len);
 			}
 			rb_iter_dealloc(iter);
 		}
