@@ -3,6 +3,8 @@
 docs/
 
 *.exe
+*.o
+
 calc
 calc.h
 calc.c
