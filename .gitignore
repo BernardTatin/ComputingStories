@@ -1,6 +1,8 @@
 #
 
 docs/
+cmake-build-*/
+.idea/
 
 *.exe
 *.o
