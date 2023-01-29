@@ -12,6 +12,7 @@
 #include "rb_tree.h"
 #include "path-loader.h"
 #include "tree-path.h"
+#include "tree-bin.h"
 
 /*
  * this tree is not the best way to work here,
@@ -54,6 +55,7 @@ bool load_path(const char *in_path) {
             switch  (add_to_tree_path(tree_path, strdup(token), order++)) {
                 case DIR_OK:
                     fprintf(stdout, "You can add the files from %s\n", token);
+                    explore_dir(token);
                     break;
                 case DIR_NOT_FOUND:
                     fprintf(stderr,
