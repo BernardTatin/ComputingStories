@@ -14,10 +14,15 @@
 #define PROMPT_CALC ">="
 #define PROMPT_EMPTY ""
 
+#define MAXLEN	256
 typedef struct _CalcConfig {
 	bool is_quiet;
 	char *prompt_user;
 	char *prompt_calc;
+	char r0[MAXLEN+1];
+	size_t s0e;
+	size_t s0s;
+
 } CalcConfig;
 
 static inline char last_char(const char *s) __attribute__((pure)) {
@@ -25,16 +30,15 @@ static inline char last_char(const char *s) __attribute__((pure)) {
 	return s[l - 1];
 }
 
-static inline void show_result(const int result, const char *line, const bool is_quiet) {
-	char c = last_char(line);
+static inline void show_result(const int result, const char eol, const bool is_quiet) {
 	if (is_quiet) {
-		if (c != ';') {
+		if (eol != ';') {
 			printf("%d\n", result);
 		} else {
 			printf("%d; ", result);
 		}
 	} else {
-		if (c != ';') {
+		if (eol != ';') {
 			printf("%s %6d\n%s ",
 					PROMPT_CALC, result, PROMPT_USER);
 		} else {

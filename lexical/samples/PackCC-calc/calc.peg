@@ -25,7 +25,13 @@ void parse(const bool is_quiet) {
 }
 
 # rules
-statement <- _ e:expression _ EOL { show_result(e, $0, auxil->is_quiet); }
+statement <- _ e:expression _ EOL {
+		char eol = '\n';
+		strcpy(auxil->r0, $0);
+		auxil->s0s = $0s;
+		auxil->s0e = $0e;
+		show_result(e, auxil->r0[auxil->s0e], auxil->is_quiet);
+	}
            / ( !EOL . )* EOL      { printf("error\n%s ", PROMPT_USER); }
 
 expression <- e:term { $$ = e; }
