@@ -8,6 +8,6 @@ add_executable(PreShell
         path-loader.c path-loader.h
         config.h
         lib/rb_tree.c lib/rb_tree.h
-        )
+        tree-path.h)
 target_include_directories(PreShell PUBLIC
         lib)
