@@ -33,6 +33,7 @@ int main(int argc, char **argv) {
     }
     if (load_path(path)) {
         show_all_exe();
+        delete_tree_path();
     } else {
         fprintf(stderr, "Cannot load the current path(%s)\n", path);
         exit_value = EXIT_FAILURE;

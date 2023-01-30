@@ -109,7 +109,7 @@ rb_tree_node_dealloc_cb (rb_tree *self, rb_node *node) {
 
 rb_tree *
 rb_tree_alloc () {
-    return malloc(sizeof(rb_tree));
+    return calloc(1, sizeof(rb_tree));
 }
 
 rb_tree *
@@ -123,8 +123,8 @@ rb_tree_init (rb_tree *self, rb_tree_node_cmp_f node_cmp_cb) {
 }
 
 rb_tree *
-rb_tree_create (rb_tree_node_cmp_f node_cb) {
-    return rb_tree_init(rb_tree_alloc(), node_cb);
+rb_tree_create (rb_tree_node_cmp_f node_cmp_cb) {
+    return rb_tree_init(rb_tree_alloc(), node_cmp_cb);
 }
 
 void
@@ -143,6 +143,7 @@ rb_tree_dealloc (rb_tree *self, rb_tree_node_f node_cb) {
                     // No left links, just kill the node and move on
                     save = node->link[1];
                     node_cb(self, node);
+                    rb_node_dealloc(node);
                     node = NULL;
                 } else {
 

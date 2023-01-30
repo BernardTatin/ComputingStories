@@ -96,3 +96,18 @@ void show_all_exe(void) {
         fprintf(stdout, "Cannot travel through the PATH\n");
     }
 }
+
+static void dealloc_tree_node(rb_tree  *self, rb_node *node) {
+    NodeOfPath *nop = node->value;
+    if (nop != NULL) {
+        if (nop->path != NULL) {
+            fprintf(stdout, "DEBUG: freeing %s\n", nop->path);
+            free(nop->path);
+        }
+    }
+}
+
+void delete_tree_path(void) {
+    rb_tree_dealloc(tree_path, dealloc_tree_node);
+    tree_path = NULL;
+}

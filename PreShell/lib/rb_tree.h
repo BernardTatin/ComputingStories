@@ -57,6 +57,7 @@ typedef struct rb_node {
 typedef struct rb_tree {
     rb_node             *root;
     rb_tree_node_cmp_f  cmp;
+    rb_tree_node_f      free_node;
     size_t              size;
     void                *info; // User provided, not used by rb_tree.
 } rb_tree;
@@ -78,7 +79,7 @@ rb_node *rb_node_init            (rb_node *self, void *value);
 void    rb_node_dealloc          (rb_node *self);
 
 rb_tree *rb_tree_alloc           ();
-rb_tree *rb_tree_create          (rb_tree_node_cmp_f cmp);
+rb_tree *rb_tree_create          (rb_tree_node_cmp_f node_cmp_cb);
 rb_tree *rb_tree_init            (rb_tree *self, rb_tree_node_cmp_f cmp);
 void            rb_tree_dealloc         (rb_tree *self, rb_tree_node_f node_cb);
 void           *rb_tree_find            (rb_tree *self, void *value);
