@@ -28,9 +28,9 @@ typedef enum {
 } DirState;
 
 // DO NOT inline ! we need a pointer on it!
-static int t_path_cmp(struct rb_tree *self,
-                      struct rb_node *node_a,
-                      struct rb_node *node_b) {
+static int t_path_cmp(rb_tree *self,
+                      rb_node *node_a,
+                      rb_node *node_b) {
     NodeOfPath *a = (NodeOfPath *) node_a->value;
     NodeOfPath *b = (NodeOfPath *) node_b->value;
     return strcmp(a->path, b->path);
@@ -57,7 +57,7 @@ static inline bool path_exists(const char *path) {
     }
 }
 
-static DirState add_to_tree_path(struct rb_tree *tree, char *new_path, const int order) {
+static DirState add_to_tree_path(rb_tree *tree, char *new_path, const int order) {
     if (path_exists( new_path)) {
         NodeOfPath *tp    = create_path_node(new_path, order);
         NodeOfPath *found = rb_tree_find(tree, tp);

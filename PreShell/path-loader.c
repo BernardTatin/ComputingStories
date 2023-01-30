@@ -18,10 +18,10 @@
  * this tree is not the best way to work here,
  * the main aim is learning how to use the rb_tree API
  */
-static struct rb_tree *tree_path = NULL;
+static rb_tree *tree_path = NULL;
 
 bool control_tree_path(void) {
-    struct rb_iter *iterator = rb_iter_create();
+    rb_iter *iterator = rb_iter_create();
     bool r = true;
     if (iterator != NULL) {
         for (NodeOfPath *v = rb_iter_first(iterator, tree_path);
@@ -79,7 +79,7 @@ char *get_exe_path(const char *exe_name) {
 }
 
 void show_all_exe(void) {
-    struct rb_iter *iterator = rb_iter_create();
+    rb_iter *iterator = rb_iter_create();
     if (iterator != NULL) {
         for (NodeOfPath *v = rb_iter_first(iterator, tree_path);
              v;
