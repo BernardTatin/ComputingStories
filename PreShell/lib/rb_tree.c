@@ -34,34 +34,7 @@
 
 // rb_node
 
-rb_node *
-rb_node_alloc () {
-    return malloc(sizeof(rb_node));
-}
-
-rb_node *
-rb_node_init (rb_node *self, void *value) {
-    if (self) {
-        self->red = 1;
-        self->link[0] = self->link[1] = NULL;
-        self->value = value;
-    }
-    return self;
-}
-
-rb_node *
-rb_node_create (void *value) {
-    return rb_node_init(rb_node_alloc(), value);
-}
-
-void
-rb_node_dealloc (rb_node *self) {
-    if (self) {
-        free(self);
-    }
-}
-
-static int
+static inline int
 rb_node_is_red (const rb_node *self) {
     return self ? self->red : 0;
 }
@@ -107,25 +80,7 @@ rb_tree_node_dealloc_cb (rb_tree *self, rb_node *node) {
 
 // rb_tree
 
-rb_tree *
-rb_tree_alloc () {
-    return calloc(1, sizeof(rb_tree));
-}
 
-rb_tree *
-rb_tree_init (rb_tree *self, rb_tree_node_cmp_f node_cmp_cb) {
-    if (self) {
-        self->root = NULL;
-        self->size = 0;
-        self->cmp = node_cmp_cb ? node_cmp_cb : rb_tree_node_cmp_ptr_cb;
-    }
-    return self;
-}
-
-rb_tree *
-rb_tree_create (rb_tree_node_cmp_f node_cmp_cb) {
-    return rb_tree_init(rb_tree_alloc(), node_cmp_cb);
-}
 
 void
 rb_tree_dealloc (rb_tree *self, rb_tree_node_f node_cb) {
@@ -222,12 +177,6 @@ rb_tree_find(rb_tree *self, void *value) {
         result = it ? it->value : NULL;
     }
     return result;
-}
-
-// Creates (malloc'ates)
-int
-rb_tree_insert (rb_tree *self, void *value) {
-    return rb_tree_insert_node(self, rb_node_create(value));
 }
 
 // Returns 1 on success, 0 otherwise.
@@ -395,39 +344,11 @@ rb_tree_remove_with_cb (rb_tree *self, void *value, rb_tree_node_f node_cb) {
     return 1;
 }
 
-int
-rb_tree_remove (rb_tree *self, void *value) {
-    int result = 0;
-    if (self) {
-        result = rb_tree_remove_with_cb(self, value, rb_tree_node_dealloc_cb);
-    }
-    return result;
-}
-
-size_t
-rb_tree_size (rb_tree *self) {
-    size_t result = 0;
-    if (self) {
-        result = self->size;
-    }
-    return result;
-}
-
 // rb_iter
 
-rb_iter *
+static rb_iter *
 rb_iter_alloc () {
-    return malloc(sizeof(rb_iter));
-}
-
-rb_iter *
-rb_iter_init (rb_iter *self) {
-    if (self) {
-        self->tree = NULL;
-        self->node = NULL;
-        self->top = 0;
-    }
-    return self;
+    return rb_malloc(sizeof(rb_iter));
 }
 
 rb_iter *
@@ -435,16 +356,9 @@ rb_iter_create () {
     return rb_iter_init(rb_iter_alloc());
 }
 
-void
-rb_iter_dealloc (rb_iter *self) {
-    if (self) {
-        free(self);
-    }
-}
-
 // Internal function, init traversal object, dir determines whether
 // to begin traversal at the smallest or largest valued node.
-static void *
+void *
 rb_iter_start (rb_iter *self, rb_tree *tree, int dir) {
     void *result = NULL;
     if (self) {
@@ -466,7 +380,7 @@ rb_iter_start (rb_iter *self, rb_tree *tree, int dir) {
 }
 
 // Traverse a red black tree in the user-specified direction (0 asc, 1 desc)
-static void *
+void *
 rb_iter_move (rb_iter *self, int dir) {
     if (self->node->link[dir] != NULL) {
 
@@ -491,24 +405,4 @@ rb_iter_move (rb_iter *self, int dir) {
         } while (last == self->node->link[dir]);
     }
     return self->node == NULL ? NULL : self->node->value;
-}
-
-void *
-rb_iter_first (rb_iter *self, rb_tree *tree) {
-    return rb_iter_start(self, tree, 0);
-}
-
-void *
-rb_iter_last (rb_iter *self, rb_tree *tree) {
-    return rb_iter_start(self, tree, 1);
-}
-
-void *
-rb_iter_next (rb_iter *self) {
-    return rb_iter_move(self, 1);
-}
-
-void *
-rb_iter_prev (rb_iter *self) {
-    return rb_iter_move(self, 0);
 }

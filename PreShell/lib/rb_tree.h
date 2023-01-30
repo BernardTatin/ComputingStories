@@ -73,32 +73,116 @@ typedef struct rb_iter {
 int             rb_tree_node_cmp_ptr_cb (rb_tree *self, rb_node *a, rb_node *b);
 void            rb_tree_node_dealloc_cb (rb_tree *self, rb_node *node);
 
-rb_node *rb_node_alloc           ();
-rb_node *rb_node_create          (void *value);
-rb_node *rb_node_init            (rb_node *self, void *value);
-void    rb_node_dealloc          (rb_node *self);
+static inline void *rb_malloc(size_t size) {
+    return calloc(1, size);
+}
 
-rb_tree *rb_tree_alloc           ();
-rb_tree *rb_tree_create          (rb_tree_node_cmp_f node_cmp_cb);
-rb_tree *rb_tree_init            (rb_tree *self, rb_tree_node_cmp_f cmp);
-void            rb_tree_dealloc         (rb_tree *self, rb_tree_node_f node_cb);
-void           *rb_tree_find            (rb_tree *self, void *value);
-int             rb_tree_insert          (rb_tree *self, void *value);
-int             rb_tree_remove          (rb_tree *self, void *value);
-size_t          rb_tree_size            (rb_tree *self);
+static inline
+rb_node *rb_node_alloc           () {
+    return rb_malloc(sizeof(rb_node));
+}
 
+static inline
+rb_node *rb_node_init            (rb_node *self, void *value) {
+    if (self) {
+        self->red = 1;
+        self->link[0] = self->link[1] = NULL;
+        self->value = value;
+    }
+    return self;
+}
+static inline
+rb_node *rb_node_create          (void *value) {
+    return rb_node_init(rb_node_alloc(), value);
+}
+static inline
+void    rb_node_dealloc          (rb_node *self) {
+    if (self) {
+        free(self);
+    }
+}
 int             rb_tree_insert_node     (rb_tree *self, rb_node *node);
 int             rb_tree_remove_with_cb  (rb_tree *self, void *value, rb_tree_node_f node_cb);
 
+static inline rb_tree *rb_tree_alloc () {
+    return calloc(1, sizeof(rb_tree));
+}
+static inline rb_tree *rb_tree_init (rb_tree *self, rb_tree_node_cmp_f node_cmp_cb) {
+    if (self) {
+        self->root = NULL;
+        self->size = 0;
+        self->cmp = node_cmp_cb ? node_cmp_cb : rb_tree_node_cmp_ptr_cb;
+    }
+    return self;
+}
+static inline rb_tree *rb_tree_create (rb_tree_node_cmp_f node_cmp_cb) {
+    return rb_tree_init(rb_tree_alloc(), node_cmp_cb);
+}
+void            rb_tree_dealloc         (rb_tree *self, rb_tree_node_f node_cb);
+void           *rb_tree_find            (rb_tree *self, void *value);
+static inline
+int             rb_tree_insert          (rb_tree *self, void *value) {
+    return rb_tree_insert_node(self, rb_node_create(value));
+}
+static inline
+int             rb_tree_remove          (rb_tree *self, void *value) {
+    int result = 0;
+    if (self) {
+        result = rb_tree_remove_with_cb(self, value, rb_tree_node_dealloc_cb);
+    }
+    return result;
+}
+static inline
+size_t          rb_tree_size            (rb_tree *self) {
+    size_t result = 0;
+    if (self) {
+        result = self->size;
+    }
+    return result;
+}
+
+
+
 int             rb_tree_test            (rb_tree *self, rb_node *root);
 
-rb_iter *rb_iter_alloc           ();
-rb_iter *rb_iter_init            (rb_iter *self);
-rb_iter *rb_iter_create          ();
-void            rb_iter_dealloc         (rb_iter *self);
-void           *rb_iter_first           (rb_iter *self, rb_tree *tree);
-void           *rb_iter_last            (rb_iter *self, rb_tree *tree);
-void           *rb_iter_next            (rb_iter *self);
-void           *rb_iter_prev            (rb_iter *self);
+static inline
+rb_iter        *rb_iter_init            (rb_iter *self) {
+    if (self) {
+        self->tree = NULL;
+        self->node = NULL;
+        self->top = 0;
+    }
+    return self;
+}
+rb_iter        *rb_iter_create          ();
+static inline
+void            rb_iter_dealloc         (rb_iter *self) {
+    if (self) {
+        free(self);
+    }
+}
+
+void *rb_iter_move (rb_iter *self, int dir);
+void *rb_iter_start (rb_iter *self, rb_tree *tree, int dir);
+
+static inline void *
+rb_iter_first (rb_iter *self, rb_tree *tree) {
+    return rb_iter_start(self, tree, 0);
+}
+
+static inline void *
+rb_iter_last (rb_iter *self, rb_tree *tree) {
+    return rb_iter_start(self, tree, 1);
+}
+
+static inline void *
+rb_iter_next (rb_iter *self) {
+    return rb_iter_move(self, 1);
+}
+
+static inline void *
+rb_iter_prev (rb_iter *self) {
+    return rb_iter_move(self, 0);
+}
 
 #endif
