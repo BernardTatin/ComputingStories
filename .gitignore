@@ -11,4 +11,8 @@ calc
 calc.h
 calc.c
 
-
+*.words
+*.sorted
+*.ref
+*.out
+out
