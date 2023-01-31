@@ -70,12 +70,10 @@ rb_tree_node_cmp_ptr_cb (rb_node *a, rb_node *b) {
 }
 
 void
-rb_tree_node_dealloc_cb (rb_tree *self, rb_node *node) {
-    if (self) {
+rb_tree_node_dealloc_cb (rb_node *node) {
         if (node) {
             rb_node_dealloc(node);
         }
-    }
 }
 
 // rb_tree
@@ -83,7 +81,7 @@ rb_tree_node_dealloc_cb (rb_tree *self, rb_node *node) {
 
 
 void
-rb_tree_dealloc (rb_tree *self, rb_tree_node_f node_cb) {
+rb_tree_dealloc (rb_tree *self, rb_tree_node_free node_cb) {
     if (self) {
         if (node_cb) {
             rb_node *node = self->root;
@@ -97,7 +95,7 @@ rb_tree_dealloc (rb_tree *self, rb_tree_node_f node_cb) {
 
                     // No left links, just kill the node and move on
                     save = node->link[1];
-                    node_cb(self, node);
+                    node_cb(node);
                     rb_node_dealloc(node);
                     node = NULL;
                 } else {
@@ -257,7 +255,7 @@ rb_tree_insert_node (rb_tree *self, rb_node *node) {
 // can be provided to dealloc node and/or user data. Use rb_tree_node_dealloc
 // default callback to deallocate node created by rb_tree_insert(...).
 int
-rb_tree_remove_with_cb (rb_tree *self, void *value, rb_tree_node_f node_cb) {
+rb_tree_remove_with_cb (rb_tree *self, void *value, rb_tree_node_free node_cb) {
     if (self->root != NULL) {
         rb_node head = {0}; // False tree root
         rb_node node = { .value = value }; // Value wrapper node
@@ -326,7 +324,7 @@ rb_tree_remove_with_cb (rb_tree *self, void *value, rb_tree_node_f node_cb) {
             p->link[p->link[1] == q] = q->link[q->link[0] == NULL];
 
             if (node_cb) {
-                node_cb(self, q);
+                node_cb(q);
             }
             q = NULL;
         }

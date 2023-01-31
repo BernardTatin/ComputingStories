@@ -108,6 +108,6 @@ static void dealloc_tree_node(rb_tree  *self, rb_node *node) {
 }
 
 void delete_tree_path(void) {
-    rb_tree_dealloc(tree_path, dealloc_tree_node);
+    rb_tree_dealloc(dealloc_tree_node);
     tree_path = NULL;
 }

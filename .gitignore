@@ -2,6 +2,7 @@
 
 docs/
 cmake-build-*/
+build*/
 .idea/
 
 *.exe
@@ -10,6 +11,8 @@ cmake-build-*/
 calc
 calc.h
 calc.c
+
+valgrind*.txt
 
 *.words
 *.sorted

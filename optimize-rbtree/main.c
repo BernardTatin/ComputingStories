@@ -19,6 +19,7 @@ typedef struct {
 
 static sword *new_sword(const char *word) {
     sword *s = rb_malloc(sizeof(sword));
+
     s->word = strdup(word);
     s->count = 1;
     return s;
@@ -53,6 +54,7 @@ static bool load(rb_tree *tree, const char *file_name) {
                     found->count +=1;
                 }
             }
+            fclose(f);
             return true;
         } else {
             return false;
@@ -69,10 +71,11 @@ static void write(rb_tree *tree) {
         for (sword *v = rb_iter_first(iter, tree); v; v = rb_iter_next(iter)) {
             fprintf(stdout, "%7d %s\n", v->count, v->word);
         }
+        rb_iter_dealloc(iter);
     }
 }
 
-static void dealloc_tree_node(rb_tree  *self, rb_node *node) {
+static void dealloc_tree_node(rb_node *node) {
     sword *nop = node->value;
     if (nop != NULL) {
         if (nop->word != NULL) {
