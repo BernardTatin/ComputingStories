@@ -46,9 +46,13 @@ static bool load(rb_tree *tree, const char *file_name) {
                 if (l>0) {
                     line[l-1] = 0;
                 }
-                sword *s = new_sword(line);
-                sword *found = rb_tree_find(tree, s);
+                sword tf = {
+                        .word = line,
+                        .count = 1
+                };
+                sword *found = rb_tree_find(tree, &tf);
                 if (found == NULL) {
+                    sword *s = new_sword(line);
                     rb_tree_insert(tree, s);
                 } else {
                     found->count +=1;
@@ -77,10 +81,12 @@ static void write(rb_tree *tree) {
 
 static void dealloc_tree_node(rb_node *node) {
     sword *nop = node->value;
+
     if (nop != NULL) {
         if (nop->word != NULL) {
             free(nop->word);
         }
+        free(nop);
     }
 }
 
