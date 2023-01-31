@@ -65,7 +65,7 @@ rb_node_rotate2 (rb_node *self, int dir) {
 // rb_tree - default callbacks
 
 int
-rb_tree_node_cmp_ptr_cb (rb_tree *self, rb_node *a, rb_node *b) {
+rb_tree_node_cmp_ptr_cb (rb_node *a, rb_node *b) {
     return (a->value > b->value) - (a->value < b->value);
 }
 
@@ -136,8 +136,8 @@ rb_tree_test (rb_tree *self, rb_node *root) {
         rh = rb_tree_test(self, rn);
 
         /* Invalid binary search tree */
-        if ( ( ln != NULL && self->cmp(self, ln, root) >= 0 )
-            || ( rn != NULL && self->cmp(self, rn, root) <= 0))
+        if ( ( ln != NULL && self->cmp(ln, root) >= 0 )
+            || ( rn != NULL && self->cmp(rn, root) <= 0))
         {
             puts ( "Binary tree violation" );
             return 0;
@@ -165,7 +165,7 @@ rb_tree_find(rb_tree *self, void *value) {
         rb_node *it = self->root;
         int cmp = 0;
         while (it) {
-            if ((cmp = self->cmp(self, it, &node))) {
+            if ((cmp = self->cmp(it, &node))) {
 
                 // If the tree supports duplicates, they should be
                 // chained to the right subtree for this to work
@@ -225,12 +225,12 @@ rb_tree_insert_node (rb_tree *self, rb_node *node) {
 
                 // Stop working if we inserted a node. This
                 // check also disallows duplicates in the tree
-                if (self->cmp(self, q, node) == 0) {
+                if (self->cmp(q, node) == 0) {
                     break;
                 }
 
                 last = dir;
-                dir = self->cmp(self, q, node) < 0;
+                dir = self->cmp(q, node) < 0;
 
                 // Move the helpers down
                 if (g != NULL) {
@@ -278,11 +278,11 @@ rb_tree_remove_with_cb (rb_tree *self, void *value, rb_tree_node_f node_cb) {
             // Move the helpers down
             g = p, p = q;
             q = q->link[dir];
-            dir = self->cmp(self, q, &node) < 0;
+            dir = self->cmp(q, &node) < 0;
 
             // Save the node with matching value and keep
             // going; we'll do removal tasks at the end
-            if (self->cmp(self, q, &node) == 0) {
+            if (self->cmp(q, &node) == 0) {
                 f = q;
             }
 

@@ -24,7 +24,7 @@ static sword *new_sword(const char *word) {
     return s;
 }
 
-static int cmp_sword(rb_tree *t, rb_node *na, rb_node *nb) {
+static int cmp_sword(rb_node *na, rb_node *nb) {
     sword *a = (sword *)na->value;
     sword *b = (sword *)nb->value;
     return strcmp(a->word, b->word);

@@ -45,7 +45,7 @@
 typedef struct rb_node rb_node;
 typedef struct rb_tree rb_tree;
 
-typedef int  (*rb_tree_node_cmp_f)(rb_tree *self, rb_node *a, rb_node *b);
+typedef int  (*rb_tree_node_cmp_f)(rb_node *a, rb_node *b);
 typedef void (*rb_tree_node_f)(rb_tree *self, rb_node *node);
 
 typedef struct rb_node {
@@ -70,7 +70,7 @@ typedef struct rb_iter {
     void           *info;                     // User provided, not used by rb_iter.
 }            rb_iter;
 
-int rb_tree_node_cmp_ptr_cb(rb_tree *self, rb_node *a, rb_node *b);
+int rb_tree_node_cmp_ptr_cb(rb_node *a, rb_node *b);
 void rb_tree_node_dealloc_cb(rb_tree *self, rb_node *node);
 
 static inline
