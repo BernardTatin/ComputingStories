@@ -8,9 +8,26 @@
 
 #include <stdio.h>
 #include <dirent.h>
+#include <string.h>
 
 #include "tree-bin.h"
+#include "rb_tree.h"
 
+typedef struct {
+    char *name;
+    char *path;
+    int count;
+} NodeOfBin;
+
+static int t_bin_cmp(rb_node *na, rb_node *nb) {
+    if (na == nb) {
+        return 0;
+    } else {
+        NodeOfBin *a = (NodeOfBin *)na->value;
+        NodeOfBin *b = (NodeOfBin *)nb->value;
+        return strcmp(a, b);
+    }
+}
 bool explore_dir(const char *dir_name) {
     struct dirent *pDirent;
     DIR *pDir;

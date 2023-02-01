@@ -15,12 +15,6 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-typedef struct {
-    char *binary_name;
-    char *main_path;
-    int count;
-} NodeOfBinary;
-
 static inline bool is_binary_x(const char *path_name) {
     if (access(path_name, X_OK) == 0) {
         return true;
