@@ -56,12 +56,17 @@ static inline bool path_exists(const char *path) {
     }
 }
 
-static DirState add_to_tree_path(rb_tree *tree, char *new_path, const int order) {
+static inline DirState add_to_tree_path(rb_tree *tree, char *new_path, const int order) {
     if (path_exists( new_path)) {
-        NodeOfPath *tp    = create_path_node(new_path, order);
-        NodeOfPath *found = rb_tree_find(tree, tp);
+        NodeOfPath tf = {
+                .path = new_path,
+                .count = 0,
+                .order = 0
+        };
+        NodeOfPath *found = rb_tree_find(tree, &tf);
 
         if (found == NULL) {
+            NodeOfPath *tp    = create_path_node(strdup(new_path), order);
             rb_tree_insert(tree, tp);
             return DIR_OK;
         } else {

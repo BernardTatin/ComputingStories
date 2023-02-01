@@ -52,7 +52,7 @@ bool load_path(const char *in_path) {
     tree_path = rb_tree_create(t_path_cmp);
     if (tree_path != NULL) {
         while ((token = strtok_r(rest, ":", &rest)) != NULL) {
-            switch  (add_to_tree_path(tree_path, strdup(token), order++)) {
+            switch  (add_to_tree_path(tree_path, token, order++)) {
                 case DIR_OK:
                     fprintf(stdout, "You can add the files from %s\n", token);
                     explore_dir(token);
@@ -68,7 +68,6 @@ bool load_path(const char *in_path) {
             }
         }
         free(path);
-        //control_tree_path();
         return true;
     } else {
         return false;
@@ -104,6 +103,7 @@ static void dealloc_tree_node(rb_node *node) {
             fprintf(stdout, "DEBUG: freeing %s\n", nop->path);
             free(nop->path);
         }
+        free(nop);
     }
 }
 
