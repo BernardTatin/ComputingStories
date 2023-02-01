@@ -26,9 +26,13 @@ static sword *new_sword(const char *word) {
 }
 
 static int cmp_sword(rb_node *na, rb_node *nb) {
-    sword *a = (sword *)na->value;
-    sword *b = (sword *)nb->value;
-    return strcmp(a->word, b->word);
+    if (na == nb) {
+        return 0;
+    } else {
+        sword *a = (sword *) na->value;
+        sword *b = (sword *) nb->value;
+        return strcmp(a->word, b->word);
+    }
 }
 
 static inline rb_tree *get_tree() {
@@ -41,15 +45,15 @@ static bool load(rb_tree *tree, const char *file_name) {
         FILE *f = fopen(file_name, "r");
         if (f != NULL) {
             char line[line_length + 1];
+            sword tf = {
+                    .word = line,
+                    .count = 1
+            };
             while(fgets(line, line_length, f) != NULL) {
                 int l = strlen(line);
                 if (l>0) {
                     line[l-1] = 0;
                 }
-                sword tf = {
-                        .word = line,
-                        .count = 1
-                };
                 sword *found = rb_tree_find(tree, &tf);
                 if (found == NULL) {
                     sword *s = new_sword(line);

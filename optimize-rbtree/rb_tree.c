@@ -178,6 +178,7 @@ rb_tree_find(rb_tree *self, void *value) {
 }
 
 // Returns 1 on success, 0 otherwise.
+// not meaningful
 int
 rb_tree_insert_node (rb_tree *self, rb_node *node) {
     int result = 0;
@@ -248,7 +249,7 @@ rb_tree_insert_node (rb_tree *self, rb_node *node) {
         ++self->size;
     }
 
-    return 1;
+    return result;
 }
 
 // Returns 1 if the value was removed, 0 otherwise. Optional node callback
