@@ -28,8 +28,7 @@ typedef enum {
 } DirState;
 
 // DO NOT inline ! we need a pointer on it!
-static int t_path_cmp(rb_tree *self,
-                      rb_node *node_a,
+static int t_path_cmp(rb_node *node_a,
                       rb_node *node_b) {
     NodeOfPath *a = (NodeOfPath *) node_a->value;
     NodeOfPath *b = (NodeOfPath *) node_b->value;
