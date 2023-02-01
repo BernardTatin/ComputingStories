@@ -58,9 +58,7 @@ typedef struct rb_node {
 typedef struct rb_tree {
     rb_node            *root;
     rb_tree_node_cmp_f cmp;
-    rb_tree_node_f     free_node;
     size_t             size;
-    void               *info; // User provided, not used by rb_tree.
 }            rb_tree;
 
 typedef struct rb_iter {
@@ -68,7 +66,6 @@ typedef struct rb_iter {
     struct rb_node *node;                     // Current node
     struct rb_node *path[RB_ITER_MAX_HEIGHT]; // Traversal path
     size_t         top;                      // Top of stack
-    void           *info;                     // User provided, not used by rb_iter.
 }            rb_iter;
 
 int rb_tree_node_cmp_ptr_cb(rb_node *a, rb_node *b);
