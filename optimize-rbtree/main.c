@@ -10,6 +10,8 @@
 
 #include "rb_tree.h"
 
+#define STATIC
+
 const int line_length = 511;
 
 typedef struct {
@@ -17,7 +19,8 @@ typedef struct {
     int count;
 } sword;
 
-static sword *new_sword(const char *word) {
+
+STATIC sword *new_sword(const char *word) {
     sword *s = rb_malloc(sizeof(sword));
 
     s->word = strdup(word);
@@ -25,7 +28,7 @@ static sword *new_sword(const char *word) {
     return s;
 }
 
-static int cmp_sword(rb_node *na, rb_node *nb) {
+STATIC int cmp_sword(rb_node *na, rb_node *nb) {
     if (na == nb) {
         return 0;
     } else {
@@ -35,12 +38,12 @@ static int cmp_sword(rb_node *na, rb_node *nb) {
     }
 }
 
-static inline rb_tree *get_tree() {
+STATIC rb_tree *get_tree() {
     rb_tree *tree = rb_tree_create(cmp_sword);
     return tree;
 }
 
-static bool load(rb_tree *tree, const char *file_name) {
+STATIC bool load(rb_tree *tree, const char *file_name) {
     if (tree != NULL) {
         FILE *f = fopen(file_name, "r");
         if (f != NULL) {
@@ -54,6 +57,7 @@ static bool load(rb_tree *tree, const char *file_name) {
                 if (l>0) {
                     line[l-1] = 0;
                 }
+#if 1
                 sword *found = rb_tree_find(tree, &tf);
                 if (found == NULL) {
                     sword *s = new_sword(line);
@@ -61,6 +65,16 @@ static bool load(rb_tree *tree, const char *file_name) {
                 } else {
                     found->count +=1;
                 }
+#else
+                sword *s = new_sword(line);
+                rb_node *found = rb_tree_insert(tree, s);
+                if (found) {
+                    sword *f = (sword *)found->value;
+                    f->count++;
+                    free(s->word);
+                    free(s);
+                }
+#endif
             }
             fclose(f);
             return true;
@@ -73,7 +87,7 @@ static bool load(rb_tree *tree, const char *file_name) {
     }
 }
 
-static void write(rb_tree *tree) {
+STATIC void write(rb_tree *tree) {
     struct rb_iter *iter = rb_iter_create();
     if (iter) {
         for (sword *v = rb_iter_first(iter, tree); v; v = rb_iter_next(iter)) {
@@ -83,7 +97,7 @@ static void write(rb_tree *tree) {
     }
 }
 
-static void dealloc_tree_node(rb_node *node) {
+STATIC void dealloc_tree_node(rb_node *node) {
     sword *nop = node->value;
 
     if (nop != NULL) {
@@ -94,7 +108,7 @@ static void dealloc_tree_node(rb_node *node) {
     }
 }
 
-static void delete_tree(rb_tree *tree) {
+STATIC void delete_tree(rb_tree *tree) {
     rb_tree_dealloc(tree, dealloc_tree_node);
 }
 

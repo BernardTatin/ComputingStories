@@ -177,15 +177,16 @@ rb_tree_find(rb_tree *self, void *value) {
     return result;
 }
 
-// Returns 1 on success, 0 otherwise.
-// not meaningful
-int
+// THIS COMMENT MUST BE REWRITTEN
+// Returns NULL if not successful or node inserted but not found
+// else return the existing node with the same value
+rb_node*
 rb_tree_insert_node (rb_tree *self, rb_node *node) {
-    int result = 0;
+    rb_node *result = NULL;
     if (self && node) {
         if (self->root == NULL) {
             self->root = node;
-            result = 1;
+            result = NULL;
         } else {
             rb_node head = { 0 }; // False tree root
             rb_node *g, *t;       // Grandparent & parent
@@ -224,7 +225,13 @@ rb_tree_insert_node (rb_tree *self, rb_node *node) {
 
                 // Stop working if we inserted a node. This
                 // check also disallows duplicates in the tree
-                if (self->cmp(q, node) == 0) {
+                if (q == node) {
+                    // we are at the newly inserted node
+                    result = NULL;
+                    break;
+                } else if (self->cmp(q, node) == 0) {
+                    // a node with the same value already exist
+                    result = q;
                     break;
                 }
 

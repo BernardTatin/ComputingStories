@@ -103,7 +103,7 @@ void rb_node_dealloc(rb_node *self) {
     }
 }
 
-int rb_tree_insert_node(rb_tree *self, rb_node *node);
+rb_node *rb_tree_insert_node(rb_tree *self, rb_node *node);
 int rb_tree_remove_with_cb(rb_tree *self, void *value, rb_tree_node_free node_cb);
 
 static inline
@@ -130,7 +130,7 @@ void rb_tree_dealloc(rb_tree *self, rb_tree_node_free node_cb);
 void *rb_tree_find(rb_tree *self, void *value);
 
 static inline
-int rb_tree_insert(rb_tree *self, void *value) {
+rb_node *rb_tree_insert(rb_tree *self, void *value) {
     return rb_tree_insert_node(self, rb_node_create(value));
 }
 
