@@ -86,9 +86,9 @@ rb_tree_node_dealloc_cb (rb_node *node) {
 
 
 void
-rb_tree_dealloc (rb_tree *self, rb_tree_node_free node_cb) {
+rb_tree_dealloc (rb_tree *self) {
     if (self) {
-        if (node_cb) {
+        if (self->free_node) {
             rb_node *node = self->root;
             rb_node *save = NULL;
 
@@ -100,7 +100,7 @@ rb_tree_dealloc (rb_tree *self, rb_tree_node_free node_cb) {
 
                     // No left links, just kill the node and move on
                     save = node->link[1];
-                    node_cb(node);
+                    self->free_node(node);
                     rb_node_dealloc(node);
                     node = NULL;
                 } else {
@@ -139,8 +139,8 @@ rb_tree_test (rb_tree *self, rb_node *root) {
         rh = rb_tree_test(self, rn);
 
         /* Invalid binary search tree */
-        if ( ( ln != NULL && self->cmp(rb_get_key(ln), rb_get_key(root)) >= 0 )
-            || ( rn != NULL && self->cmp(rb_get_key(rn), rb_get_key(root)) <= 0))
+        if ( ( ln != NULL && self->cmp_node(rb_get_key(ln), rb_get_key(root)) >= 0 )
+            || ( rn != NULL && self->cmp_node(rb_get_key(rn), rb_get_key(root)) <= 0))
         {
             puts ( "Binary tree violation" );
             return 0;
@@ -167,7 +167,7 @@ rb_tree_find(rb_tree *self, rb_key_ptr key) {
         rb_node *it = self->root;
         while (it) {
             int cmp;
-            if ((cmp = self->cmp(it->data->key, key))) {
+            if ((cmp = self->cmp_node(rb_get_key(it), key))) {
 
                 // If the tree supports duplicates, they should be
                 // chained to the right subtree for this to work
@@ -233,14 +233,14 @@ rb_tree_insert_node (rb_tree *self, rb_node *node) {
                     // we are at the newly inserted node
                     result = NULL;
                     break;
-                } else if (self->cmp(rb_get_key(q), rb_get_key(node)) == 0) {
+                } else if (self->cmp_node(rb_get_key(q), rb_get_key(node)) == 0) {
                     // a node with the same data already exist
                     result = q;
                     break;
                 }
 
                 last = dir;
-                dir = self->cmp(rb_get_key(q), rb_get_key(node)) < 0;
+                dir = self->cmp_node(rb_get_key(q), rb_get_key(node)) < 0;
 
                 // Move the helpers down
                 if (g != NULL) {
@@ -267,7 +267,7 @@ rb_tree_insert_node (rb_tree *self, rb_node *node) {
 // can be provided to dealloc node and/or user data. Use rb_tree_node_dealloc
 // default callback to deallocate node created by rb_tree_insert(...).
 int
-rb_tree_remove_with_cb (rb_tree *self, rb_key_ptr key, rb_tree_node_free node_cb) {
+rb_tree_remove_with_cb (rb_tree *self, rb_key_ptr key) {
     if (self->root != NULL) {
         rb_node head = {0}; // False tree root
         //rb_node node = { .data = key }; // Value wrapper node
@@ -288,11 +288,11 @@ rb_tree_remove_with_cb (rb_tree *self, rb_key_ptr key, rb_tree_node_free node_cb
             // Move the helpers down
             g = p, p = q;
             q = q->link[dir];
-            dir = self->cmp(rb_get_key(q), key) < 0;
+            dir = self->cmp_node(rb_get_key(q), key) < 0;
 
             // Save the node with matching data and keep
             // going; we'll do removal tasks at the end
-            if (self->cmp(rb_get_key(q), key) == 0) {
+            if (self->cmp_node(rb_get_key(q), key) == 0) {
                 f = q;
             }
 
@@ -335,8 +335,8 @@ rb_tree_remove_with_cb (rb_tree *self, rb_key_ptr key, rb_tree_node_free node_cb
 
             p->link[p->link[1] == q] = q->link[q->link[0] == NULL];
 
-            if (node_cb) {
-                node_cb(q);
+            if (self->free_node) {
+                self->free_node(q);
             }
             q = NULL;
         }

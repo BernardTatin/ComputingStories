@@ -39,8 +39,20 @@ STATIC int cmp_sword(rb_key_ptr na, rb_key_ptr nb) {
     }
 }
 
+STATIC void free_sword(rb_node *node) {
+    sword *nop = (sword *)node->data;
+
+    if (nop != NULL) {
+        if (nop->word != NULL) {
+            free(nop->word);
+            free(nop->count);
+        }
+        free(nop);
+    }
+}
+
 STATIC rb_tree *get_tree() {
-    rb_tree *tree = rb_tree_create(cmp_sword);
+    rb_tree *tree = rb_tree_create(cmp_sword, free_sword);
     return tree;
 }
 
@@ -102,29 +114,13 @@ STATIC void write(rb_tree *tree) {
     }
 }
 
-STATIC void dealloc_tree_node(rb_node *node) {
-    sword *nop = (sword *)node->data;
-
-    if (nop != NULL) {
-        if (nop->word != NULL) {
-            free(nop->word);
-            free(nop->count);
-        }
-        free(nop);
-    }
-}
-
-STATIC void delete_tree(rb_tree *tree) {
-    rb_tree_dealloc(tree, dealloc_tree_node);
-}
-
 int main(int argc, char **argv) {
     for (int i=1; i<argc; i++) {
         rb_tree *tree = get_tree();
         if (load(tree, argv[i])) {
             write(tree);
         }
-        delete_tree(tree);
+        rb_tree_dealloc(tree);
     }
     return 0;
 }

@@ -55,7 +55,6 @@ typedef struct {
 
 typedef int  (*rb_tree_node_cmp_f)(rb_key_ptr a, rb_key_ptr b);
 typedef void (*rb_tree_node_free)(rb_node *node);
-typedef void (*rb_tree_node_f)(rb_tree *self, rb_node *node);
 
 typedef struct rb_node {
     int      red;     // Color red (1), black (0)
@@ -65,7 +64,8 @@ typedef struct rb_node {
 
 typedef struct rb_tree {
     rb_node            *root;
-    rb_tree_node_cmp_f cmp;
+    rb_tree_node_cmp_f cmp_node;
+    rb_tree_node_free  free_node;
     size_t             size;
 }            rb_tree;
 
@@ -112,7 +112,7 @@ void rb_node_dealloc(rb_node *self) {
 }
 
 rb_node *rb_tree_insert_node(rb_tree *self, rb_node *node);
-int rb_tree_remove_with_cb(rb_tree *self, rb_key_ptr key, rb_tree_node_free node_cb);
+int rb_tree_remove_with_cb(rb_tree *self, rb_key_ptr key);
 
 static inline
 rb_tree *rb_tree_alloc() {
@@ -120,21 +120,22 @@ rb_tree *rb_tree_alloc() {
 }
 
 static inline
-rb_tree *rb_tree_init(rb_tree *self, rb_tree_node_cmp_f node_cmp_cb) {
+rb_tree *rb_tree_init(rb_tree *self, rb_tree_node_cmp_f node_cmp_cb, rb_tree_node_free node_free_cb) {
     if (self) {
         self->root = NULL;
-        self->size = 0;
-        self->cmp  = node_cmp_cb ? node_cmp_cb : rb_tree_node_cmp_ptr_cb;
+        self->size     = 0;
+        self->cmp_node = node_cmp_cb ? node_cmp_cb : rb_tree_node_cmp_ptr_cb;
+        self->free_node= node_free_cb;
     }
     return self;
 }
 
 static inline
-rb_tree *rb_tree_create(rb_tree_node_cmp_f node_cmp_cb) {
-    return rb_tree_init(rb_tree_alloc(), node_cmp_cb);
+rb_tree *rb_tree_create(rb_tree_node_cmp_f node_cmp_cb, rb_tree_node_free node_free_cb) {
+    return rb_tree_init(rb_tree_alloc(), node_cmp_cb, node_free_cb);
 }
 
-void rb_tree_dealloc(rb_tree *self, rb_tree_node_free node_cb);
+void rb_tree_dealloc(rb_tree *self);
 rb_data *rb_tree_find(rb_tree *self, rb_key_ptr value);
 
 static inline
@@ -146,7 +147,7 @@ static inline
 int rb_tree_remove(rb_tree *self, rb_key_ptr value) {
     int result = 0;
     if (self) {
-        result = rb_tree_remove_with_cb(self, value, rb_tree_node_dealloc_cb);
+        result = rb_tree_remove_with_cb(self, value);
     }
     return result;
 }
