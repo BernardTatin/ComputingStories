@@ -57,7 +57,12 @@ STATIC bool load(rb_tree *tree, const char *file_name) {
                 if (l>0) {
                     line[l-1] = 0;
                 }
+                // ======================================================================
+                // note for me
+                // please: DO NOT REMOVE the #if 1
+                // ======================================================================
 #if 1
+                // more efficient code
                 sword *found = rb_tree_find(tree, &tf);
                 if (found == NULL) {
                     sword *s = new_sword(line);
@@ -66,6 +71,9 @@ STATIC bool load(rb_tree *tree, const char *file_name) {
                     found->count +=1;
                 }
 #else
+                // less efficient code with memory leaks
+                // if the value is freed, the node itself is not freed
+                // so, don't do that unless you fix the bug
                 sword *s = new_sword(line);
                 rb_node *found = rb_tree_insert(tree, s);
                 if (found) {
