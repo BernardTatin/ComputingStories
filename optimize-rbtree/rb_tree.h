@@ -45,14 +45,22 @@
 typedef struct rb_node rb_node;
 typedef struct rb_tree rb_tree;
 
-typedef int  (*rb_tree_node_cmp_f)(rb_node *a, rb_node *b);
+typedef void *rb_key_ptr;
+typedef void *rb_value_ptr;
+
+typedef struct {
+    rb_key_ptr   key;
+    rb_value_ptr data;
+} rb_data;
+
+typedef int  (*rb_tree_node_cmp_f)(rb_key_ptr a, rb_key_ptr b);
 typedef void (*rb_tree_node_free)(rb_node *node);
 typedef void (*rb_tree_node_f)(rb_tree *self, rb_node *node);
 
 typedef struct rb_node {
-    int     red;     // Color red (1), black (0)
+    int      red;     // Color red (1), black (0)
     rb_node *link[2]; // Link left [0] and right [1]
-    void    *value;   // User provided, used indirectly via rb_tree_node_cmp_f.
+    rb_data *data;   // User provided, used indirectly via rb_tree_node_cmp_f.
 }            rb_node;
 
 typedef struct rb_tree {
@@ -68,7 +76,7 @@ typedef struct rb_iter {
     size_t         top;                      // Top of stack
 }            rb_iter;
 
-int rb_tree_node_cmp_ptr_cb(rb_node *a, rb_node *b);
+int rb_tree_node_cmp_ptr_cb(rb_key_ptr a, rb_key_ptr b);
 void rb_tree_node_dealloc_cb(rb_node *node);
 
 static inline
@@ -82,17 +90,17 @@ rb_node *rb_node_alloc() {
 }
 
 static inline
-rb_node *rb_node_init(rb_node *self, void *value) {
+rb_node *rb_node_init(rb_node *self, rb_data *value) {
     if (self) {
         self->red = 1;
         self->link[0] = self->link[1] = NULL;
-        self->value = value;
+        self->data = value;
     }
     return self;
 }
 
 static inline
-rb_node *rb_node_create(void *value) {
+rb_node *rb_node_create(rb_data *value) {
     return rb_node_init(rb_node_alloc(), value);
 }
 
@@ -104,7 +112,7 @@ void rb_node_dealloc(rb_node *self) {
 }
 
 rb_node *rb_tree_insert_node(rb_tree *self, rb_node *node);
-int rb_tree_remove_with_cb(rb_tree *self, void *value, rb_tree_node_free node_cb);
+int rb_tree_remove_with_cb(rb_tree *self, rb_key_ptr key, rb_tree_node_free node_cb);
 
 static inline
 rb_tree *rb_tree_alloc() {
@@ -127,15 +135,15 @@ rb_tree *rb_tree_create(rb_tree_node_cmp_f node_cmp_cb) {
 }
 
 void rb_tree_dealloc(rb_tree *self, rb_tree_node_free node_cb);
-void *rb_tree_find(rb_tree *self, void *value);
+rb_data *rb_tree_find(rb_tree *self, rb_key_ptr value);
 
 static inline
-rb_node *rb_tree_insert(rb_tree *self, void *value) {
+rb_node *rb_tree_insert(rb_tree *self, rb_data *value) {
     return rb_tree_insert_node(self, rb_node_create(value));
 }
 
 static inline
-int rb_tree_remove(rb_tree *self, void *value) {
+int rb_tree_remove(rb_tree *self, rb_key_ptr value) {
     int result = 0;
     if (self) {
         result = rb_tree_remove_with_cb(self, value, rb_tree_node_dealloc_cb);
@@ -174,26 +182,26 @@ void rb_iter_dealloc(rb_iter *self) {
     }
 }
 
-void *rb_iter_move(rb_iter *self, int dir);
-void *rb_iter_start(rb_iter *self, rb_tree *tree, int dir);
+rb_data *rb_iter_move(rb_iter *self, int dir);
+rb_data *rb_iter_start(rb_iter *self, rb_tree *tree, int dir);
 
 static inline
-void *rb_iter_first(rb_iter *self, rb_tree *tree) {
+rb_data *rb_iter_first(rb_iter *self, rb_tree *tree) {
     return rb_iter_start(self, tree, 0);
 }
 
 static inline
-void *rb_iter_last(rb_iter *self, rb_tree *tree) {
+rb_data *rb_iter_last(rb_iter *self, rb_tree *tree) {
     return rb_iter_start(self, tree, 1);
 }
 
 static inline
-void *rb_iter_next(rb_iter *self) {
+rb_data *rb_iter_next(rb_iter *self) {
     return rb_iter_move(self, 1);
 }
 
 static inline
-void *rb_iter_prev(rb_iter *self) {
+rb_data *rb_iter_prev(rb_iter *self) {
     return rb_iter_move(self, 0);
 }
 

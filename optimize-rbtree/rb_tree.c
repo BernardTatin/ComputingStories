@@ -34,6 +34,11 @@
 
 // rb_node
 
+static inline rb_key_ptr
+rb_get_key(rb_node *node) {
+    return node->data->key;
+}
+
 static inline int
 rb_node_is_red (const rb_node *self) {
     return self ? self->red : 0;
@@ -65,15 +70,15 @@ rb_node_rotate2 (rb_node *self, int dir) {
 // rb_tree - default callbacks
 
 int
-rb_tree_node_cmp_ptr_cb (rb_node *a, rb_node *b) {
-    return (a->value > b->value) - (a->value < b->value);
+rb_tree_node_cmp_ptr_cb (rb_key_ptr a, rb_key_ptr b) {
+    return (a > b) - (a < b);
 }
 
 void
 rb_tree_node_dealloc_cb (rb_node *node) {
-        if (node) {
-            rb_node_dealloc(node);
-        }
+    if (node) {
+        rb_node_dealloc(node);
+    }
 }
 
 // rb_tree
@@ -134,8 +139,8 @@ rb_tree_test (rb_tree *self, rb_node *root) {
         rh = rb_tree_test(self, rn);
 
         /* Invalid binary search tree */
-        if ( ( ln != NULL && self->cmp(ln, root) >= 0 )
-            || ( rn != NULL && self->cmp(rn, root) <= 0))
+        if ( ( ln != NULL && self->cmp(rb_get_key(ln), rb_get_key(root)) >= 0 )
+            || ( rn != NULL && self->cmp(rb_get_key(rn), rb_get_key(root)) <= 0))
         {
             puts ( "Binary tree violation" );
             return 0;
@@ -155,15 +160,14 @@ rb_tree_test (rb_tree *self, rb_node *root) {
     }
 }
 
-void *
-rb_tree_find(rb_tree *self, void *value) {
-    void *result = NULL;
+rb_data *
+rb_tree_find(rb_tree *self, rb_key_ptr key) {
+    rb_data *result = NULL;
     if (self) {
-        rb_node node = { .value = value };
         rb_node *it = self->root;
-        int cmp = 0;
         while (it) {
-            if ((cmp = self->cmp(it, &node))) {
+            int cmp;
+            if ((cmp = self->cmp(it->data->key, key))) {
 
                 // If the tree supports duplicates, they should be
                 // chained to the right subtree for this to work
@@ -172,14 +176,14 @@ rb_tree_find(rb_tree *self, void *value) {
                 break;
             }
         }
-        result = it ? it->value : NULL;
+        result = it ? it->data : NULL;
     }
     return result;
 }
 
 // THIS COMMENT MUST BE REWRITTEN
 // Returns NULL if not successful or node inserted but not found
-// else return the existing node with the same value
+// else return the existing node with the same data
 rb_node*
 rb_tree_insert_node (rb_tree *self, rb_node *node) {
     rb_node *result = NULL;
@@ -229,14 +233,14 @@ rb_tree_insert_node (rb_tree *self, rb_node *node) {
                     // we are at the newly inserted node
                     result = NULL;
                     break;
-                } else if (self->cmp(q, node) == 0) {
-                    // a node with the same value already exist
+                } else if (self->cmp(rb_get_key(q), rb_get_key(node)) == 0) {
+                    // a node with the same data already exist
                     result = q;
                     break;
                 }
 
                 last = dir;
-                dir = self->cmp(q, node) < 0;
+                dir = self->cmp(rb_get_key(q), rb_get_key(node)) < 0;
 
                 // Move the helpers down
                 if (g != NULL) {
@@ -259,14 +263,14 @@ rb_tree_insert_node (rb_tree *self, rb_node *node) {
     return result;
 }
 
-// Returns 1 if the value was removed, 0 otherwise. Optional node callback
+// Returns 1 if the data was removed, 0 otherwise. Optional node callback
 // can be provided to dealloc node and/or user data. Use rb_tree_node_dealloc
 // default callback to deallocate node created by rb_tree_insert(...).
 int
-rb_tree_remove_with_cb (rb_tree *self, void *value, rb_tree_node_free node_cb) {
+rb_tree_remove_with_cb (rb_tree *self, rb_key_ptr key, rb_tree_node_free node_cb) {
     if (self->root != NULL) {
         rb_node head = {0}; // False tree root
-        rb_node node = { .value = value }; // Value wrapper node
+        //rb_node node = { .data = key }; // Value wrapper node
         rb_node *q, *p, *g; // Helpers
         rb_node *f = NULL;  // Found item
         int dir = 1;
@@ -284,11 +288,11 @@ rb_tree_remove_with_cb (rb_tree *self, void *value, rb_tree_node_free node_cb) {
             // Move the helpers down
             g = p, p = q;
             q = q->link[dir];
-            dir = self->cmp(q, &node) < 0;
+            dir = self->cmp(rb_get_key(q), key) < 0;
 
-            // Save the node with matching value and keep
+            // Save the node with matching data and keep
             // going; we'll do removal tasks at the end
-            if (self->cmp(q, &node) == 0) {
+            if (self->cmp(rb_get_key(q), key) == 0) {
                 f = q;
             }
 
@@ -325,9 +329,9 @@ rb_tree_remove_with_cb (rb_tree *self, void *value, rb_tree_node_free node_cb) {
 
         // Replace and remove the saved node
         if (f) {
-            void *tmp = f->value;
-            f->value = q->value;
-            q->value = tmp;
+            void *tmp = f->data;
+            f->data = q->data;
+            q->data = tmp;
 
             p->link[p->link[1] == q] = q->link[q->link[0] == NULL];
 
@@ -364,7 +368,7 @@ rb_iter_create () {
 
 // Internal function, init traversal object, dir determines whether
 // to begin traversal at the smallest or largest valued node.
-void *
+rb_data *
 rb_iter_start (rb_iter *self, rb_tree *tree, int dir) {
     void *result = NULL;
     if (self) {
@@ -380,13 +384,13 @@ rb_iter_start (rb_iter *self, rb_tree *tree, int dir) {
             }
         }
 
-        result = self->node == NULL ? NULL : self->node->value;
+        result = self->node == NULL ? NULL : self->node->data;
     }
     return result;
 }
 
 // Traverse a red black tree in the user-specified direction (0 asc, 1 desc)
-void *
+rb_data *
 rb_iter_move (rb_iter *self, int dir) {
     if (self->node->link[dir] != NULL) {
 
@@ -410,5 +414,5 @@ rb_iter_move (rb_iter *self, int dir) {
             self->node = self->path[--self->top];
         } while (last == self->node->link[dir]);
     }
-    return self->node == NULL ? NULL : self->node->value;
+    return self->node == NULL ? NULL : self->node->data;
 }
