@@ -4,6 +4,9 @@
 //
 // Modified by Mirek Rusin <http://github.com/mirek/rb_tree>.
 //
+// Modified by Bernard Tatin
+// (not sure it's very good but it fits well with my needs)
+//
 // This is free and unencumbered software released into the public domain.
 //
 // Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -48,13 +51,13 @@ typedef struct rb_tree rb_tree;
 typedef void *rb_key_ptr;
 typedef void *rb_value_ptr;
 
+typedef int  (*rb_tree_node_cmp_f)(rb_key_ptr a, rb_key_ptr b);
+typedef void (*rb_tree_node_free)(rb_node *node);
+
 typedef struct {
     rb_key_ptr   key;
     rb_value_ptr data;
 } rb_data;
-
-typedef int  (*rb_tree_node_cmp_f)(rb_key_ptr a, rb_key_ptr b);
-typedef void (*rb_tree_node_free)(rb_node *node);
 
 typedef struct rb_node {
     int      red;     // Color red (1), black (0)
