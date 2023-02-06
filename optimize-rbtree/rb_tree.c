@@ -33,14 +33,16 @@
 #include "rb_tree.h"
 #include "private_rb_tree.h"
 
-rb_key_ptr
-rb_get_key(rb_node *node) {
+// =====================================================================
+// utility functions
+rb_data *rb_get_data(rb_node *node) {
+    return node->data;
+}
+
+rb_key_ptr rb_get_key(rb_node *node) {
     return node->data->key;
 }
 
-rb_data *rb_get_data(rb_node *node) {
-   return node->data;
-}
 rb_value_ptr rb_get_value(rb_node *node) {
     return node->data->value;
 }
@@ -49,9 +51,8 @@ rb_node *rb_node_create(rb_data *value) {
     return rb_node_init(rb_node_alloc(), value);
 }
 
-// public API
 
-
+// =====================================================================
 // rb_node
 
 static inline int
@@ -82,33 +83,21 @@ rb_node_rotate2 (rb_node *self, int dir) {
     return result;
 }
 
-// rb_tree - default callbacks
 
-
-int
-rb_tree_node_cmp_ptr_cb (rb_key_ptr a, rb_key_ptr b) {
-    return (a > b) - (a < b);
-}
-
-void
-rb_tree_node_dealloc_cb (rb_node *node) {
-    if (node) {
-        rb_node_dealloc(node);
-    }
-}
-
+// =====================================================================
 // rb_tree
 
-rb_tree *rb_tree_alloc() {
+static inline rb_tree *rb_tree_alloc() {
     return calloc(1, sizeof(rb_tree));
 }
 
 static inline rb_tree *rb_tree_init(rb_tree *self, rb_tree_node_cmp_f node_cmp_cb, rb_tree_node_free node_free_cb) {
-    if (self) {
-        self->root = NULL;
-        self->size     = 0;
-        self->cmp_node = node_cmp_cb;
-        self->free_node= node_free_cb;
+    if (self && node_cmp_cb && node_free_cb) {
+        self->root      = NULL;
+        self->size      = 0;
+        self->cmp_node  = node_cmp_cb;
+        self->free_node = node_free_cb;
+        return self;
     }
     return self;
 }
@@ -118,8 +107,8 @@ rb_tree *rb_tree_create(rb_tree_node_cmp_f node_cmp_cb, rb_tree_node_free node_f
 }
 
 static rb_node *rb_tree_insert_node(rb_tree *self, rb_node *node);
-rb_node *rb_tree_insert(rb_tree *self, rb_data *value) {
-    return rb_tree_insert_node(self, rb_node_create(value));
+rb_node *rb_tree_insert(rb_tree *self, rb_data *data) {
+    return rb_tree_insert_node(self, rb_node_create(data));
 }
 
 size_t rb_tree_size(rb_tree *self) {
@@ -129,6 +118,16 @@ size_t rb_tree_size(rb_tree *self) {
     }
     return result;
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

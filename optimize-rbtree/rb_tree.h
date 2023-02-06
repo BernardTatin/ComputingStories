@@ -85,7 +85,10 @@ int rb_tree_remove_node(rb_tree *self,      // remove the node with the specifie
 
 // =====================================================================
 // RB tree API
+
 // create a tree withe comparaison and allocation function pointer
+// the 2 callback functions must NOT be NULL!
+// this version does not control these errors
 rb_tree *rb_tree_create(rb_tree_node_cmp_f node_cmp_cb,
                         rb_tree_node_free node_free_cb);
 // deallocate a tree
