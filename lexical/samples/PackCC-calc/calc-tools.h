@@ -5,6 +5,7 @@
  */
 
 #if !defined(__CALC_TOOLS_H__)
+#define  __CALC_TOOLS_H__
 
 #include <stdbool.h>
 #include <string.h>
