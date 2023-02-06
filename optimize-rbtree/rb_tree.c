@@ -31,13 +31,28 @@
 //
 
 #include "rb_tree.h"
+#include "private_rb_tree.h"
 
-// rb_node
-
-static inline rb_key_ptr
+rb_key_ptr
 rb_get_key(rb_node *node) {
     return node->data->key;
 }
+
+rb_data *rb_get_data(rb_node *node) {
+   return node->data;
+}
+rb_value_ptr rb_get_value(rb_node *node) {
+    return node->data->value;
+}
+
+rb_node *rb_node_create(rb_data *value) {
+    return rb_node_init(rb_node_alloc(), value);
+}
+
+// public API
+
+
+// rb_node
 
 static inline int
 rb_node_is_red (const rb_node *self) {
@@ -69,6 +84,7 @@ rb_node_rotate2 (rb_node *self, int dir) {
 
 // rb_tree - default callbacks
 
+
 int
 rb_tree_node_cmp_ptr_cb (rb_key_ptr a, rb_key_ptr b) {
     return (a > b) - (a < b);
@@ -82,6 +98,37 @@ rb_tree_node_dealloc_cb (rb_node *node) {
 }
 
 // rb_tree
+
+rb_tree *rb_tree_alloc() {
+    return calloc(1, sizeof(rb_tree));
+}
+
+static inline rb_tree *rb_tree_init(rb_tree *self, rb_tree_node_cmp_f node_cmp_cb, rb_tree_node_free node_free_cb) {
+    if (self) {
+        self->root = NULL;
+        self->size     = 0;
+        self->cmp_node = node_cmp_cb;
+        self->free_node= node_free_cb;
+    }
+    return self;
+}
+
+rb_tree *rb_tree_create(rb_tree_node_cmp_f node_cmp_cb, rb_tree_node_free node_free_cb) {
+    return rb_tree_init(rb_tree_alloc(), node_cmp_cb, node_free_cb);
+}
+
+static rb_node *rb_tree_insert_node(rb_tree *self, rb_node *node);
+rb_node *rb_tree_insert(rb_tree *self, rb_data *value) {
+    return rb_tree_insert_node(self, rb_node_create(value));
+}
+
+size_t rb_tree_size(rb_tree *self) {
+    size_t result = 0;
+    if (self) {
+        result = self->size;
+    }
+    return result;
+}
 
 
 
@@ -184,7 +231,7 @@ rb_tree_find(rb_tree *self, rb_key_ptr key) {
 // THIS COMMENT MUST BE REWRITTEN
 // Returns NULL if not successful or node inserted but not found
 // else return the existing node with the same data
-rb_node*
+static rb_node*
 rb_tree_insert_node (rb_tree *self, rb_node *node) {
     rb_node *result = NULL;
     if (self && node) {
@@ -267,7 +314,7 @@ rb_tree_insert_node (rb_tree *self, rb_node *node) {
 // can be provided to dealloc node and/or user data. Use rb_tree_node_dealloc
 // default callback to deallocate node created by rb_tree_insert(...).
 int
-rb_tree_remove_with_cb (rb_tree *self, rb_key_ptr key) {
+rb_tree_remove_node (rb_tree *self, rb_key_ptr key) {
     if (self->root != NULL) {
         rb_node head = {0}; // False tree root
         //rb_node node = { .data = key }; // Value wrapper node
@@ -361,6 +408,16 @@ rb_iter_alloc () {
     return rb_malloc(sizeof(rb_iter));
 }
 
+static inline
+rb_iter *rb_iter_init(rb_iter *self) {
+    if (self) {
+        self->tree = NULL;
+        self->node = NULL;
+        self->top  = 0;
+    }
+    return self;
+}
+
 rb_iter *
 rb_iter_create () {
     return rb_iter_init(rb_iter_alloc());
@@ -415,4 +472,26 @@ rb_iter_move (rb_iter *self, int dir) {
         } while (last == self->node->link[dir]);
     }
     return self->node == NULL ? NULL : self->node->data;
+}
+
+rb_data *rb_iter_first(rb_iter *self, rb_tree *tree) {
+    return rb_iter_start(self, tree, 0);
+}
+
+rb_data *rb_iter_last(rb_iter *self, rb_tree *tree) {
+    return rb_iter_start(self, tree, 1);
+}
+
+rb_data *rb_iter_next(rb_iter *self) {
+    return rb_iter_move(self, 1);
+}
+
+rb_data *rb_iter_prev(rb_iter *self) {
+    return rb_iter_move(self, 0);
+}
+
+void rb_iter_dealloc(rb_iter *self) {
+    if (self) {
+        free(self);
+    }
 }

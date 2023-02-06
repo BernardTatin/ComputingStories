@@ -40,7 +40,7 @@ STATIC int cmp_sword(rb_key_ptr na, rb_key_ptr nb) {
 }
 
 STATIC void free_sword(rb_node *node) {
-    sword *nop = (sword *)node->data;
+    sword *nop = (sword *) rb_get_data(node);
 
     if (nop != NULL) {
         if (nop->word != NULL) {
