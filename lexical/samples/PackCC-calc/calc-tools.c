@@ -12,7 +12,7 @@
 #include "calc.h"
 
 
-int gcd(const int a, const int b) {
+CONS_FUNC Cint gcd(const Cint a, const Cint b) {
 	if (b == 0) {
 		return a;
 	} else  {
@@ -20,8 +20,37 @@ int gcd(const int a, const int b) {
 	}
 }
 
+CONS_FUNC Cint fact(const Cint n) {
+	Cint r = 1;
+	if (n > (Cint)1) {
+		for (Cint i=(Cint)2; i<=n; i++) {
+			r *= i;
+		}
+	}
+	return r;
+}
 
-CalcConfig *create_auxiliary(const bool is_quiet) {
+CONS_FUNC Cint fibo(const Cint n) {
+	switch (n) {
+		case 0:
+			return 0;
+		case 1:
+		case 2:
+			return 1;
+		default:
+			break;
+	}
+	Cint result = 1;
+	Cint n1 = 1, n2 = 1;
+	for (Cint i=2; i<n; i++) {
+		result = n1 + n2;
+		n1 = n2;
+		n2 = result;
+	}
+	return result;
+}
+
+CONS_FUNC CalcConfig *create_auxiliary(const bool is_quiet) {
 	CalcConfig *conf = (CalcConfig *)malloc(sizeof(CalcConfig));
 	if (conf != NULL) {
 		conf->is_quiet = is_quiet;
@@ -36,7 +65,7 @@ CalcConfig *create_auxiliary(const bool is_quiet) {
 	return conf;
 }
 
-void destroy_auxiliary(CalcConfig *conf) {
+CONS_FUNC void destroy_auxiliary(CalcConfig *conf) {
 	if (conf != NULL) {
 		free(conf);
 	}
@@ -51,8 +80,18 @@ void parse(const bool is_quiet) {
     calc_destroy(ctx);
 }
 
+#define SHOWS(t)	fprintf(stdout, "size of %-10s : %3zu\n", #t, sizeof(t))
+static void test_int_size() {
+	SHOWS(short);
+	SHOWS(int);
+	SHOWS(long);
+	SHOWS(long long);
+#undef SHOWS
+}
+
 int main(int argc, char **argv) {
     bool quiet = false;
+
     if (argc == 2) {
         if (strcmp(argv[1], "-q") == 0) {
             quiet = true;
@@ -60,6 +99,7 @@ int main(int argc, char **argv) {
     }
     if (!quiet) {
         printf("\nsuper calc, version %s (%s)\n\n", calc_version, __DATE__);
+		test_int_size();
         printf("%s ", PROMPT_USER);
     }
 
