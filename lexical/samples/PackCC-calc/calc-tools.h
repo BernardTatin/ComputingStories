@@ -8,7 +8,12 @@
 #define  __CALC_TOOLS_H__
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
+
+#define PURE __attribute__((pure))
+
+typedef int64_t Cint;
 
 #define calc_version "0.0.2"
 #define PROMPT_USER ">:"
@@ -16,6 +21,7 @@
 #define PROMPT_EMPTY ""
 
 #define MAXLEN	256
+
 typedef struct _CalcConfig {
 	bool is_quiet;
 	char *prompt_user;
@@ -26,32 +32,28 @@ typedef struct _CalcConfig {
 
 } CalcConfig;
 
-static inline char last_char(const char *s) __attribute__((pure)) {
-	size_t l = strlen(s);
-	return s[l - 1];
-}
-
-static inline void show_result(const int result, const char eol, const bool is_quiet) {
+static inline void show_result(const Cint result, const char eol, const bool is_quiet) {
 	if (is_quiet) {
 		if (eol != ';') {
-			printf("%d\n", result);
+			printf("%ld\n", result);
 		} else {
-			printf("%d; ", result);
+			printf("%ld; ", result);
 		}
 	} else {
 		if (eol != ';') {
-			printf("%s %6d\n%s ",
+			printf("%s %6ld\n%s ",
 					PROMPT_CALC, result, PROMPT_USER);
 		} else {
-			printf("%s %6d; ", PROMPT_CALC, result);
+			printf("%s %6ld; ", PROMPT_CALC, result);
 		}
 	}
 }
 
-int gcd(const int a, const int b)  __attribute__((pure));
-
-CalcConfig *create_auxiliary(const bool is_quiet);
-void destroy_auxiliary(CalcConfig *conf);
+PURE Cint gcd(const Cint a, const Cint b);
+PURE Cint fact(const Cint n);
+PURE Cint fibo(const Cint n);
+PURE CalcConfig *create_auxiliary(const bool is_quiet);
+PURE void destroy_auxiliary(CalcConfig *conf);
 void parse(const bool is_quiet);
 
 #endif // __CALC_TOOLS_H__

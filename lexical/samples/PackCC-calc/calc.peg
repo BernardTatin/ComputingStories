@@ -1,5 +1,6 @@
 %prefix "calc"
 %auxil "CalcConfig *"
+%value "Cint"
 
 %header {
 #include <stdio.h>
@@ -35,7 +36,13 @@ unary <- '+' _ e:unary { $$ = +e; }
        / '-' _ e:unary { $$ = -e; }
        / e:primary     { $$ = e; }
 
-primary <- < [0-9]+ >               { $$ = atoi($1); }
+primary <- < [0-9]+ >               { $$ = atol($1); }
+		 / 'fibo' _ '(' _ e:expression _ ')' {
+		 	$$ = fibo (e);
+		 } # BT
+		 / 'fact' _ '(' _ e:expression _ ')' {
+		 	$$ = fact (e);
+		 } # BT
 		 / 'square' _ '(' _ e:expression _ ')' {
 		 	$$ = (e) * (e);
 		 } # BT
