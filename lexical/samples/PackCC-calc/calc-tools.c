@@ -11,6 +11,53 @@
 #include "calc-tools.h"
 #include "calc.h"
 
+CONS_FUNC char *str_strip_left(char *s) {
+    char *r = s;
+
+    while (*r == ' ') {
+        r++;
+    }
+    return r;
+}
+
+static inline bool divm(const __int128 a, const __int128 b,
+                        __int128 *d, __int128 *m) {
+    if (a == (__int128)0) {
+        return false;
+    } else if (a > 0) {
+        *d = a / b;
+        *m = a %b;
+        return true;
+    } else {
+        return divm(-a, b, d, m);
+    }
+}
+
+CONS_FUNC char *i128_to_char(const __int128 N) {
+    char *r0 = (char *) malloc(I128_LEN);
+    char *r = r0 + I128_LEN - 1;
+
+    if (N == 0) {
+        *r0 = '0';
+        *(r0 + 1) = 0;
+    } else {
+        __int128 d = 0;
+        __int128 m = 0;
+        __int128 n = N;
+
+        memset(r0, ' ', I128_LEN);
+        *(r--) = 0;
+        while (divm(n, 10, &d, &m)) {
+            char c = (char)m | 0x30;
+            *(r--) = c;
+            n = d;
+        }
+        if (N < 0) {
+            *(r--) = '-';
+        }
+    }
+    return r0;
+}
 
 CONS_FUNC Cint gcd(const Cint a, const Cint b) {
 	if (b == 0) {

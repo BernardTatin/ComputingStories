@@ -14,14 +14,15 @@
 #define PURE_FUNC __attribute__((pure))
 #define CONS_FUNC __attribute__((const))
 
-typedef int64_t Cint;
+typedef __int128 Cint;
 
-#define calc_version "0.0.2"
+#define calc_version "0.0.3"
 #define PROMPT_USER ">:"
 #define PROMPT_CALC ">="
 #define PROMPT_EMPTY ""
 
-#define MAXLEN	256
+#define MAXLEN	    256
+#define I128_LEN    128
 
 typedef struct _CalcConfig {
 	bool is_quiet;
@@ -33,21 +34,28 @@ typedef struct _CalcConfig {
 
 } CalcConfig;
 
-static inline void show_result(const Cint result, const char eol, const bool is_quiet) {
+CONS_FUNC char *i128_to_char(const __int128);
+CONS_FUNC char *str_strip_left(char *s);
+
+static inline void show_result(const Cint N, const char eol, const bool is_quiet) {
+    char *N_str = i128_to_char(N);
+    char *result = str_strip_left(N_str);
+
 	if (is_quiet) {
 		if (eol != ';') {
-			printf("%ld\n", result);
+			printf("%s\n", result);
 		} else {
-			printf("%ld; ", result);
+			printf("%s; ", result);
 		}
 	} else {
 		if (eol != ';') {
-			printf("%s %6ld\n%s ",
+			printf("%s %16s\n%s ",
 					PROMPT_CALC, result, PROMPT_USER);
 		} else {
-			printf("%s %6ld; ", PROMPT_CALC, result);
+			printf("%s %616s; ", PROMPT_CALC, result);
 		}
 	}
+    free(N_str);
 }
 
 CONS_FUNC Cint gcd(const Cint a, const Cint b);

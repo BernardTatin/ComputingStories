@@ -3,7 +3,8 @@
 # ==================================================
 
 CC = clang
-COPT = -O3 -Wall -pedantic
+# COPT = -O3 -Wall -pedantic
+COPT = -O0 -ggdb3 -Wall -pedantic
 PACKCC = packcc
 
 TARGET ?= calc
