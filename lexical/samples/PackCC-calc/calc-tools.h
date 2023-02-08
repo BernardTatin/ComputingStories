@@ -11,10 +11,15 @@
 #include <stdint.h>
 #include <string.h>
 
-#define PURE_FUNC __attribute__((pure))
-#define CONS_FUNC __attribute__((const))
+#include "compat.h"
 
-typedef __int128 Cint;
+#if defined(COMPAT_128B_INT)
+    typedef COMPAT_128B_INT Cint;
+    #define CALC_NAME "Calc (128 bits integers)"
+#else
+    typedef int64_t Cint
+    #define CALC_NAME "Calc (64 bits integers)"
+#endif
 
 #define calc_version "0.0.3"
 #define PROMPT_USER ">:"
@@ -34,7 +39,7 @@ typedef struct _CalcConfig {
 
 } CalcConfig;
 
-CONS_FUNC char *i128_to_char(const __int128);
+CONS_FUNC char *i128_to_char(const Cint);
 CONS_FUNC char *str_strip_left(char *s);
 
 static inline void show_result(const Cint N, const char eol, const bool is_quiet) {

@@ -7,9 +7,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "calc-tools.h"
 #include "calc.h"
+#include "compat.h"
 
 CONS_FUNC char *str_strip_left(char *s) {
     char *r = s;
@@ -24,16 +26,17 @@ static inline bool divm(const __int128 a, const __int128 b,
                         __int128 *d, __int128 *m) {
     if (a == (__int128)0) {
         return false;
-    } else if (a > 0) {
+    } else {
         *d = a / b;
         *m = a %b;
+        if (*m < 0) {
+            *m = -(*m);
+        }
         return true;
-    } else {
-        return divm(-a, b, d, m);
     }
 }
 
-CONS_FUNC char *i128_to_char(const __int128 N) {
+CONS_FUNC char *i128_to_char(const Cint N) {
     char *r0 = (char *) malloc(I128_LEN);
     char *r = r0 + I128_LEN - 1;
 
@@ -44,6 +47,12 @@ CONS_FUNC char *i128_to_char(const __int128 N) {
         __int128 d = 0;
         __int128 m = 0;
         __int128 n = N;
+        bool is_neg = false;
+        if (N < 0) {
+            // does not work with the INT128_MIN!
+            n = -N;
+            is_neg = true;
+        }
 
         memset(r0, ' ', I128_LEN);
         *(r--) = 0;
@@ -52,7 +61,7 @@ CONS_FUNC char *i128_to_char(const __int128 N) {
             *(r--) = c;
             n = d;
         }
-        if (N < 0) {
+        if (is_neg) {
             *(r--) = '-';
         }
     }
@@ -136,6 +145,20 @@ static void test_int_size() {
 #undef SHOWS
 }
 
+static void test_min_max() {
+    Cint maxH = (Cint)INT64_MAX;
+    Cint maxL = (Cint)UINT64_MAX;
+    Cint max = (maxH << 64) | maxL;
+    Cint min = max + 1;
+
+    char *smax = i128_to_char(max);
+    char *smin = i128_to_char(min);
+
+    fprintf(stdout, "i128 max: %s\n", smax);
+    // I can't print it
+    fprintf(stdout, "i128 min: %s\n", smin);
+}
+
 int main(int argc, char **argv) {
     bool quiet = false;
 
@@ -145,8 +168,9 @@ int main(int argc, char **argv) {
         }
     }
     if (!quiet) {
-        printf("\nsuper calc, version %s (%s)\n\n", calc_version, __DATE__);
+        printf("\nSuper %s, version %s (%s)\n\n", CALC_NAME, calc_version, __DATE__);
 		test_int_size();
+        test_min_max();
         printf("%s ", PROMPT_USER);
     }
 
