@@ -11,15 +11,19 @@ CALL = $(CINC) $(COPT) $(CWARN)
 PACKCC = packcc
 
 TARGET ?= calc
-DEPS = lib/include/compat.h
+DEPS = lib/include/compat.h lib/include/int128.h
+
+DLIB = lib/include
+
+SOURCES = $(TARGET).c $(TARGET)-tools.c $(DLIB)/int128.c
 
 all: $(TARGET)
 
 $(TARGET).c: $(TARGET).peg
 	$(PACKCC) $<
 
-$(TARGET): $(TARGET).c $(TARGET)-tools.h $(TARGET)-tools.c $(DEPS)
-	$(CC) $(CALL) -o $@ $< $(TARGET)-tools.c
+$(TARGET): $(SOURCES) $(DEPS)
+	$(CC) $(CALL) -o $@ $(SOURCES)
 
 clean:
 	rm -fv $(TARGET) $(TARGET).h $(TARGET).c

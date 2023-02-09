@@ -12,9 +12,9 @@
 #include <string.h>
 
 #include "compat.h"
+#include "int128.h"
 
-#if defined(COMPAT_128B_INT)
-    typedef COMPAT_128B_INT Cint;
+#if defined(HAS_128BITS_INT)
     #define CALC_NAME "Calc (128 bits integers)"
 #else
     typedef int64_t Cint
@@ -27,7 +27,6 @@
 #define PROMPT_EMPTY ""
 
 #define MAXLEN	    256
-#define I128_LEN    128
 
 typedef struct _CalcConfig {
 	bool is_quiet;
@@ -39,7 +38,6 @@ typedef struct _CalcConfig {
 
 } CalcConfig;
 
-CONS_FUNC char *i128_to_char(const Cint);
 CONS_FUNC char *str_strip_left(char *s);
 
 static inline void show_result(const Cint N, const char eol, const bool is_quiet) {

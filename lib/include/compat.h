@@ -15,9 +15,6 @@
     #define COMPAT_GCC
 #endif
 
-#if defined(__SIZEOF_INT128__)
-    #define COMPAT_128B_INT __int128
-#endif
 
 #if defined(__clang__) || defined(__GNUC__)
     #define PURE_FUNC __attribute__((pure))
