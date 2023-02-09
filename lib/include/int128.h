@@ -21,7 +21,7 @@
     typedef __int128 Cint;
 
     static const Cint i128_max = ((Cint)INT64_MAX << 64) | ((Cint)UINT64_MAX);
-    static const Cint i128_carry_bit = 1 << 127;
+    static const Cint i128_carry_bit = (Cint)1 << 127;
 
     CONS_FUNC char *i128_to_char(const Cint);
 

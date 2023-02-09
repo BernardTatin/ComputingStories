@@ -19,3 +19,6 @@ valgrind*.txt
 *.ref
 *.out
 out
+
+*.log
+.*.log
