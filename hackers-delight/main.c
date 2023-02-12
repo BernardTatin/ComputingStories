@@ -7,40 +7,19 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
 
-#define BITS    4
+#include "hck-del.h"
 
-#if (BITS == 4) || (BITS == 8)
-typedef int8_t  INT;
-typedef uint8_t UINT;
+// mainly for tests
+# if (BITS == 4) || (BITS == 8)
+SCONST int  count     = 1 << BITS;
+#else
+SCONST INT count      = 256;
 #endif
 
-const size_t isize = BITS;
-#if (BITS == 8)
-const INT imax = INT8_MAX;
-const INT imin = INT8_MIN;
-#elif (BITS == 4)
-const INT imax = 7;
-const INT imin = -8;
-#endif
-
-const UINT hbit_mask = (UINT) 1 << (isize - 1);
-const int  count     = 1 << BITS;
-const int bits_mask = count - 1;
-
-bool all_negative(INT x, INT y) {
-    INT r = x & y & hbit_mask;
-    return r != 0;
-}
-
-bool all_positive(INT x, INT y) {
-    INT r = (x | y) & hbit_mask;
-    return r == 0;
-}
-
-bool add_overflow_v0(INT x, INT y) {
+bool add_overflow_reference(INT x, INT y) {
     return (((x > 0) &
              (y > 0) &
              (x > (imax - y))) |
@@ -152,16 +131,27 @@ void experiment_int(bool add_overflow(INT x, INT y), INT int_expression(INT x, I
 
 }
 #else
-void show_overflow() {
+void show_overflow(bool add_overflow(INT x, INT y)) {
     INT x = imin;
 
     for (int i=0; i<count; i++, x++) {
         INT y = imin;
         for (int j=0; j<count; j++, y++) {
-            bool r = add_overflow_v1(x, y);
-            fprintf(stdout, "%3d + %3d -> %s\n", x, y, r ? "ovf" : ":");
+            bool r = add_overflow(x, y);
+            char *sx = int_to_str(x);
+            char *sy = int_to_str(y);
+            fprintf(stdout, "%-3s + %-3s -> %s\n",
+                    sx, sy, r ? "ovf" : ":");
+            free(sy);
+            free(sx);
         }
     }
+}
+void experiment_bool(bool add_overflow(INT x, INT y), bool bool_expression(INT x, INT y)) {
+
+}
+void experiment_int(bool add_overflow(INT x, INT y), INT int_expression(INT x, INT y)) {
+
 }
 #endif
 
@@ -176,20 +166,20 @@ INT iexp1(INT x, INT y) {
 #endif
 }
 
-bool add_overflow_good(INT x, INT y) {
-    INT s = x + y;
-    INT r1 = s ^ x;
-    INT r2 = s ^ y;
-    return (r1 & r2 & hbit_mask) != 0;
+void test_fibo() {
+    INT n = 1;
+    INT result = 0;
+    while (sa_fibo(n, &result)) {
+        char *sn = int_to_str(n);
+        char *sr = int_to_str(result);
+        fprintf(stdout, "fibo(%6s) = %40s\n", sn, sr);
+        free(sn);
+        free(sr);
+        n++;
+    }
 }
 
-
 int main() {
-    show_overflow(add_overflow_v0);
-    experiment_bool(add_overflow_v0, all_negative);
-    experiment_bool(add_overflow_v0, all_positive);
-    show_overflow(add_overflow_v2);
-    experiment_int(add_overflow_v0, iexp1);
-    show_overflow(add_overflow_good);
+    test_fibo();
     return 0;
 }
