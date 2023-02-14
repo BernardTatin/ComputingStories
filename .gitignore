@@ -13,6 +13,10 @@ calc.h
 calc.c
 
 valgrind*.txt
+callgrind.*
+*.bin
+*.exe
+leak-check.txt
 
 *.words
 *.sorted

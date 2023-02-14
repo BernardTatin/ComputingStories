@@ -14,7 +14,7 @@
 #include "compat.h"
 
 #if !defined(BITS)
-#define BITS     64
+#define BITS     128
 #endif
 
 #if (BITS == 128)

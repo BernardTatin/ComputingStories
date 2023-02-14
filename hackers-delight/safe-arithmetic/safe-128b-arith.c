@@ -77,7 +77,7 @@ CONS_FUNC char *sa_int_to_str(const SA_INT n) {
     char *s = strip_left(r);
 
     free(r);
-    return strdup(s);
+    return s;
 }
 
 #endif
