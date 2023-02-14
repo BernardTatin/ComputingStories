@@ -10,34 +10,34 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "hck-del.h"
+#include "safe-arithmetic/safe-int-arith.h"
 
 // mainly for tests
 # if (BITS == 4) || (BITS == 8)
 SCONST int  count     = 1 << BITS;
 #else
-SCONST INT count      = 256;
+SCONST SA_INT count = 256;
 #endif
 
-bool add_overflow_reference(INT x, INT y) {
+bool add_overflow_reference(SA_INT x, SA_INT y) {
     return (((x > 0) &
              (y > 0) &
-             (x > (imax - y))) |
+             (x > (sa_imax - y))) |
             ((x < 0) &
              (y < 0) &
-             (x < (imin - y)))
+             (x < (sa_imin - y)))
     );
 }
 
-bool add_overflow_v2(INT x, INT y) {
-    return (all_positive(x, y) && (x > (imax - y))) || (all_negative(x, y) && (x < (imin - y)))
+bool add_overflow_v2(SA_INT x, SA_INT y) {
+    return (sa_2_positive(x, y) && (x > (sa_imax - y))) || (sa_2_negative(x, y) && (x < (sa_imin - y)))
     ;
 }
 
 #if (BITS == 4)
 
-void show_overflow(bool add_overflow(INT x, INT y)) {
-    INT x = imin;
+void show_overflow(bool add_overflow(SA_INT x, SA_INT y)) {
+    SA_INT x = sa_imin;
 
     printf("\n");
     for (int i = 0; i < 17; i++) {
@@ -49,13 +49,13 @@ void show_overflow(bool add_overflow(INT x, INT y)) {
         printf(" %3d |", x);
     }
     printf("\n");
-    x = imin;
+    x = sa_imin;
     for (int i = 0; i < count; i++, x++) {
-        INT y = imin;
+        SA_INT y = sa_imin;
         printf("%2d |", x);
         for (int j = 0; j < count; j++, y++) {
-            bool r = add_overflow(y, x);
-            INT  s = x + y;
+            bool   r = add_overflow(y, x);
+            SA_INT s = x + y;
             if (r) {
                 printf(" %3s |", " ");
             } else {
@@ -66,8 +66,8 @@ void show_overflow(bool add_overflow(INT x, INT y)) {
     }
 }
 
-void experiment_bool(bool add_overflow(INT x, INT y), bool bool_expression(INT x, INT y)) {
-    INT x = imin;
+void experiment_bool(bool add_overflow(SA_INT x, SA_INT y), bool bool_expression(SA_INT x, SA_INT y)) {
+    SA_INT x = sa_imin;
 
     printf("\n");
     for (int i = 0; i < 17; i++) {
@@ -79,9 +79,9 @@ void experiment_bool(bool add_overflow(INT x, INT y), bool bool_expression(INT x
         printf(" %3d |", x);
     }
     printf("\n");
-    x = imin;
+    x = sa_imin;
     for (int i = 0; i < count; i++, x++) {
-        INT y = imin;
+        SA_INT y = sa_imin;
         printf("%2d |", x);
         for (int j = 0; j < count; j++, y++) {
             bool r = add_overflow(y, x);
@@ -99,8 +99,8 @@ void experiment_bool(bool add_overflow(INT x, INT y), bool bool_expression(INT x
 
 }
 
-void experiment_int(bool add_overflow(INT x, INT y), INT int_expression(INT x, INT y)) {
-    INT x = imin;
+void experiment_int(bool add_overflow(SA_INT x, SA_INT y), SA_INT int_expression(SA_INT x, SA_INT y)) {
+    SA_INT x = sa_imin;
 
     printf("\n");
     for (int i = 0; i < 17; i++) {
@@ -112,13 +112,13 @@ void experiment_int(bool add_overflow(INT x, INT y), INT int_expression(INT x, I
         printf(" %3d |", x);
     }
     printf("\n");
-    x = imin;
+    x = sa_imin;
     for (int i = 0; i < count; i++, x++) {
-        INT y = imin;
+        SA_INT y = sa_imin;
         printf("%2d |", x);
         for (int j = 0; j < count; j++, y++) {
-            bool r = add_overflow(y, x);
-            INT e = int_expression(y, x);
+            bool   r = add_overflow(y, x);
+            SA_INT e = int_expression(y, x);
 
             if (r) {
                 printf("<%3d>|", e);
@@ -131,15 +131,15 @@ void experiment_int(bool add_overflow(INT x, INT y), INT int_expression(INT x, I
 
 }
 #else
-void show_overflow(bool add_overflow(INT x, INT y)) {
-    INT x = imin;
+void show_overflow(bool add_overflow(SA_INT x, SA_INT y)) {
+    SA_INT x = sa_imin;
 
     for (int i=0; i<count; i++, x++) {
-        INT y = imin;
-        for (int j=0; j<count; j++, y++) {
+        SA_INT   y = sa_imin;
+        for (int j =0; j<count; j++, y++) {
             bool r = add_overflow(x, y);
-            char *sx = int_to_str(x);
-            char *sy = int_to_str(y);
+            char *sx = sa_int_to_str(x);
+            char *sy = sa_int_to_str(y);
             fprintf(stdout, "%-3s + %-3s -> %s\n",
                     sx, sy, r ? "ovf" : ":");
             free(sy);
@@ -147,34 +147,38 @@ void show_overflow(bool add_overflow(INT x, INT y)) {
         }
     }
 }
-void experiment_bool(bool add_overflow(INT x, INT y), bool bool_expression(INT x, INT y)) {
+void experiment_bool(bool add_overflow(SA_INT x, SA_INT y), bool bool_expression(SA_INT x, SA_INT y)) {
 
 }
-void experiment_int(bool add_overflow(INT x, INT y), INT int_expression(INT x, INT y)) {
+void experiment_int(bool add_overflow(SA_INT x, SA_INT y), SA_INT int_expression(SA_INT x, SA_INT y)) {
 
 }
 #endif
 
-INT iexp1(INT x, INT y) {
-    INT r1 = (x + y) ^ x;
-    INT r2 = (x + y) ^ y;
+SA_INT iexp1(SA_INT x, SA_INT y) {
+    SA_INT r1 = (x + y) ^ x;
+    SA_INT r2 = (x + y) ^ y;
 
 #if (BITS == 4)
-    return (r1 & r2) + imin;
+    return (r1 & r2) + sa_imin;
 #else
     return r1 & r2;
 #endif
 }
 
+static inline void il_free(char *ptr) {
+    //fprintf(stdout, "(                                           .) -- (%s)\n", ptr);
+    free(ptr);
+}
 void test_fibo() {
-    INT n = 1;
-    INT result = 0;
+    SA_INT n      = 1;
+    SA_INT result = 0;
     while (sa_fibo(n, &result)) {
-        char *sn = int_to_str(n);
-        char *sr = int_to_str(result);
+        char *sn = sa_int_to_str(n);
+        char *sr = sa_int_to_str(result);
         fprintf(stdout, "fibo(%6s) = %40s\n", sn, sr);
-        free(sn);
-        free(sr);
+        il_free(sr);
+        il_free(sn);
         n++;
     }
 }
