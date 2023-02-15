@@ -176,10 +176,45 @@ void test_fibo() {
     }
 }
 
+bool tsub(const SA_INT n, SA_INT *result) {
+    SA_INT s = 0;
+    bool no_ovf = true;
+#if 0
+    for (SA_INT i=0; i<n; i++) {
+        if (sa_add_overflow_reference(s, n)) {
+            no_ovf = false;
+            break;
+        } else {
+            SA_INT ts = s + n;
+            s = ts;
+        }
+    }
+#else
+    SA_INT x = sa_imax - 2*n;
+    for (SA_INT i=0; i<n; i++, x++) {
+        SA_INT ts = x - s;
+        if (sa_has_sub_overflow_s(ts, x, s)) {
+            no_ovf = false;
+            break;
+        } else {
+            char *si = sa_int_to_str(x);
+            char *st = sa_int_to_str(ts);
+
+            fprintf(stdout, "%45s -> %45s\n", si, st);
+            free(si);
+            free(st);
+            s = ts;
+        }
+    }
+#endif
+    *result = s;
+    return no_ovf;
+}
+
 bool tsumm(const SA_INT n, SA_INT *result) {
     SA_INT s = 0;
     bool no_ovf = true;
-#if 1
+#if 0
     for (SA_INT i=0; i<n; i++) {
         if (sa_add_overflow_reference(s, n)) {
             no_ovf = false;
@@ -207,7 +242,7 @@ bool tsumm(const SA_INT n, SA_INT *result) {
 #if (BITS < 16)
 const SA_INT timax = sa_imax;
 #else
-const SA_INT timax = 2000;
+const SA_INT timax = 200;
 #endif
 
 void test_perf_add_ovf(SA_INT imax) {
@@ -225,6 +260,60 @@ void test_perf_add_ovf(SA_INT imax) {
     free(si);
 }
 
+CONS_FUNC TSAOverflow sa_sfibo(const SA_INT n, SA_INT *rfibo) {
+    switch(n) {
+        case 0:
+            *rfibo = 0;
+            return SA_OVF_OK;
+        case 1:
+        case 2:
+            *rfibo = -1;
+            return SA_OVF_OK;
+        default:
+            break;
+    }
+    SA_INT      result = 1;
+    SA_INT      n1     = -1, n2 = 1;
+    for (SA_INT i      =2; i < n; i++) {
+        result = n1 - n2;
+        if (sa_has_sub_overflow_s(result, n1, n2)) {
+            return SA_OVF_OVERFLOW;
+        } else {
+            n1 = n2;
+            n2 = result;
+        }
+    }
+    *rfibo = result;
+    return SA_OVF_OK;
+}
+
+void test_sfibo() {
+    SA_INT r = 0;
+    SA_INT k = 0;
+    while (sa_sfibo(k, &r) == SA_OVF_OK) {
+        char *sk = sa_int_to_str(k);
+        char *sr = sa_int_to_str(r);
+        fprintf(stdout, "sfibo(%4s) = %40s\n", sk, sr);
+        free(sr);
+        free(sk);
+        k++;
+    }
+}
+void test_perf_sub_ovf(SA_INT imax) {
+    SA_INT r = sa_imin;
+    for (SA_INT i=0; i<imax; i++) {
+        if (!tsub(i, &r)) {
+            char *si = sa_int_to_str(i);
+            fprintf(stdout, "test_perf_sub_ovf failed at %s\n", si);
+            free(si);
+            //return;
+        }
+    }
+    char *si = sa_int_to_str(imax);
+    fprintf(stdout, "test_perf_sub_ovf tested until %s\n", si);
+    free(si);
+}
+
 void test_print128bits(const int count) {
     SA_INT n1 = sa_imin, n2 = 0;
     for (int i=0; i<count; i++, n1++, n2++) {
@@ -236,11 +325,10 @@ void test_print128bits(const int count) {
     }
 }
 int main() {
-#if 1
+#if 0
     test_print128bits(4600);
 #else
-    test_fibo();
-    test_perf_add_ovf(timax);
+    test_sfibo();
 #endif
     return 0;
 }

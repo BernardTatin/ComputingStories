@@ -31,6 +31,10 @@ typedef enum {
     SA_OVF_UNDERFLOW    // underflow occurs
 } TSAOverflow;
 
+// ------------------------------------------------------------------------
+// addition
+// ------------------------------------------------------------------------
+
 /**
  * Checks if an overflow can occur when adding two integers, optimized version
  * @param s : the already computed value of x + y,
@@ -88,5 +92,51 @@ INLINE CONS_FUNC TSAOverflow sa_add(const SA_INT x, const SA_INT y, SA_INT *resu
         return SA_OVF_OK;
     }
 }
+
+// ------------------------------------------------------------------------
+// substraction
+// ------------------------------------------------------------------------
+
+/**
+ * Checks if an overflow can occur when subtracting two integers, optimized version
+ * @param s : the already computed value of x - y,
+ * @param x : left operand of addition
+ * @param y : right operand of addition
+ * @return  : true if an overflow can occur
+ */
+INLINE CONS_FUNC bool sa_has_sub_overflow_s(const SA_INT s, const SA_INT x, SA_INT y) {
+    SA_INT r1 = s ^ x;
+    SA_INT r2 = x ^ y;
+    return (r1 & r2 & sa_hbit) != 0;
+}
+
+/**
+ * Checks if an overflow can occur when subtracting two integers, optimized version
+ * @param x : left operand of addition
+ * @param y : right operand of addition
+ * @return  : true if an overflow can occur
+ */
+INLINE CONS_FUNC bool sa_has_sub_overflow(const SA_INT x, const SA_INT y) {
+    SA_INT s  = x - y;
+    return sa_has_sub_overflow_s(s, x, y);
+}
+
+/**
+ * An addition which take care of overflow
+ * @param x : left operand of addition
+ * @param y : right operand of addition
+ * @param result : addition result
+ * @return  : one of SA_OVF_OVERFLOW, SA_OVF_OK
+ */
+INLINE CONS_FUNC TSAOverflow sa_sub(const SA_INT x, const SA_INT y, SA_INT *result) {
+    SA_INT s = x - y;
+    *result = s;
+    if (sa_has_sub_overflow_s(s, x, y)) {
+        return SA_OVF_OVERFLOW;
+    } else {
+        return SA_OVF_OK;
+    }
+}
+
 
 #endif //HACKERS_DELIGHT_SAI_OVERFLOW_H
