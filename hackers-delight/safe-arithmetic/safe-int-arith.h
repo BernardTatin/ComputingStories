@@ -6,6 +6,15 @@
  * date:    2023 - 02 - 12
  */
 
+/**
+ * Notes
+ *
+ * ADD OVERFLOW:
+ * sa_has_add_overflow_s is quicker than add_overflow_reference
+ * timings give a performance gain of 6% to 7% with a lot of calculations
+ *
+ *
+ */
 
 #ifndef HACKERS_DELIGHT_SAFE_INT_ARITH_H
 #define HACKERS_DELIGHT_SAFE_INT_ARITH_H
@@ -81,6 +90,16 @@ INLINE CONS_FUNC bool sa_has_add_overflow_s(const SA_INT s, const SA_INT x, SA_I
     SA_INT r1 = s ^ x;
     SA_INT r2 = s ^ y;
     return (r1 & r2 & sa_hbit) != 0;
+}
+
+INLINE CONS_FUNC bool add_overflow_reference(SA_INT x, SA_INT y) {
+    return (((x > 0) &
+             (y > 0) &
+             (x > (sa_imax - y))) |
+            ((x < 0) &
+             (y < 0) &
+             (x < (sa_imin - y)))
+    );
 }
 
 CONS_FUNC char *sa_int_to_str(const SA_INT n);

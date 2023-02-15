@@ -19,15 +19,6 @@ SCONST int  count     = 1 << BITS;
 SCONST SA_INT count = 256;
 #endif
 
-bool add_overflow_reference(SA_INT x, SA_INT y) {
-    return (((x > 0) &
-             (y > 0) &
-             (x > (sa_imax - y))) |
-            ((x < 0) &
-             (y < 0) &
-             (x < (sa_imin - y)))
-    );
-}
 
 bool add_overflow_v2(SA_INT x, SA_INT y) {
     return (sa_2_positive(x, y) && (x > (sa_imax - y))) || (sa_2_negative(x, y) && (x < (sa_imin - y)))
@@ -170,6 +161,8 @@ static inline void il_free(char *ptr) {
     //fprintf(stdout, "(                                           .) -- (%s)\n", ptr);
     free(ptr);
 }
+
+
 void test_fibo() {
     SA_INT n      = 1;
     SA_INT result = 0;
@@ -183,7 +176,57 @@ void test_fibo() {
     }
 }
 
+bool tsumm(const SA_INT n, SA_INT *result) {
+    SA_INT s = 0;
+    bool no_ovf = true;
+#if 1
+    for (SA_INT i=0; i<n; i++) {
+        if (add_overflow_reference(s, n)) {
+            no_ovf = false;
+            break;
+        } else {
+            SA_INT ts = s + n;
+            s = ts;
+        }
+    }
+#else
+    for (SA_INT i=0; i<n; i++) {
+        SA_INT ts = s + n;
+        if (sa_has_add_overflow_s(ts, s, n)) {
+            no_ovf = false;
+            break;
+        } else {
+            s = ts;
+        }
+    }
+#endif
+    *result = s;
+    return no_ovf;
+}
+
+#if (BITS < 16)
+const SA_INT timax = sa_imax;
+#else
+const SA_INT timax = 2000;
+#endif
+
+void test_summ(SA_INT imax) {
+    SA_INT r = 0;
+    for (SA_INT i=0; i<imax; i++) {
+        if (!tsumm(i, &r)) {
+            char *si = sa_int_to_str(i);
+            fprintf(stdout, "test_summ failed at %s\n", si);
+            free(si);
+            return;
+        }
+    }
+    char *si = sa_int_to_str(imax);
+    fprintf(stdout, "test_summ works until %s\n", si);
+    free(si);
+}
+
 int main() {
     test_fibo();
+    test_summ(timax);
     return 0;
 }
