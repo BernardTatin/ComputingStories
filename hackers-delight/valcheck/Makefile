@@ -14,7 +14,7 @@ CC 		= gcc
 CCOPTIM =
 CCDEBUG	= -ggdb3
 CCINC 	= -I$(SRCSA) -I$(SRCLIB)
-CCMORE	= -Wall -Wextra -DBITS=128
+CCMORE	= -Wall -Wextra -DBITS=64
 CALL 	= $(CCOPTIM) $(CCDEBUG) $(CCINC) $(CCMORE)
 
 VALMEM	= --leak-check=full		\
@@ -29,7 +29,7 @@ VALLOGM	= leak-check.txt
 VALLOGP = callgrind.txt
 
 DEPS	= $(SRCLIB)/compat.h $(SRCSA)/safe-int-arith.h
-SRCs	= $(SRCSA)/safe-int-arith.c $(SRCSA)/safe-128b-arith.c $(SRCDIR)/main.c
+SRCs	= $(SRCSA)/sai-maths.c $(SRCSA)/sai-string.c $(SRCDIR)/main.c
 
 BINARY	= hack-delights.bin
 
@@ -51,7 +51,6 @@ test: $(BINARY)
 
 
 clean:
-	rm $(BINARY)
+	rm -f $(BINARY)
 
 .PHONY: all clean memory performances
-

@@ -14,7 +14,7 @@
 
 
 #if !defined(BITS)
-#define BITS     128
+#define BITS     64
 #endif
 
 #include "sai-definitions.h"
