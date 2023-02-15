@@ -210,23 +210,37 @@ const SA_INT timax = sa_imax;
 const SA_INT timax = 2000;
 #endif
 
-void test_summ(SA_INT imax) {
+void test_perf_add_ovf(SA_INT imax) {
     SA_INT r = 0;
     for (SA_INT i=0; i<imax; i++) {
         if (!tsumm(i, &r)) {
             char *si = sa_int_to_str(i);
-            fprintf(stdout, "test_summ failed at %s\n", si);
+            fprintf(stdout, "test_perf_add_ovf failed at %s\n", si);
             free(si);
             return;
         }
     }
     char *si = sa_int_to_str(imax);
-    fprintf(stdout, "test_summ works until %s\n", si);
+    fprintf(stdout, "test_perf_add_ovf works until %s\n", si);
     free(si);
 }
 
+void test_print128bits(const int count) {
+    SA_INT n1 = sa_imin, n2 = 0;
+    for (int i=0; i<count; i++, n1++, n2++) {
+        char *s1 = sa_int_to_str(n1);
+        char *s2 = sa_int_to_str(n2);
+        fprintf(stdout, "%-45s %-45s\n", s1, s2);
+        free(s1);
+        free(s2);
+    }
+}
 int main() {
+#if 1
+    test_print128bits(4600);
+#else
     test_fibo();
-    test_summ(timax);
+    test_perf_add_ovf(timax);
+#endif
     return 0;
 }

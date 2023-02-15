@@ -18,7 +18,7 @@
 #endif
 
 #include "sai-definitions.h"
-#include "sai_overflow.h"
+#include "sai-overflow.h"
 #include "sai-misc.h"
 #include "sai-maths.h"
 #include "sai-string.h"
