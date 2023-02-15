@@ -80,4 +80,14 @@ CONS_FUNC char *sa_int_to_str(const SA_INT n) {
     return s;
 }
 
+#else
+CONS_FUNC char *sa_int_to_str(const SA_INT n) {
+    char buffer[sa_istrl];
+#if (BITS < 64)
+    sprintf(buffer, "%d", n);
+#elif (BITS == 64)
+    sprintf(buffer, "%ld", n);
+#endif
+    return strdup(buffer);
+}
 #endif

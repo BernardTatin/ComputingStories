@@ -166,7 +166,7 @@ static inline void il_free(char *ptr) {
 void test_fibo() {
     SA_INT n      = 1;
     SA_INT result = 0;
-    while (sa_fibo(n, &result)) {
+    while (sa_fibo(n, &result) == SA_OVF_OK) {
         char *sn = sa_int_to_str(n);
         char *sr = sa_int_to_str(result);
         fprintf(stdout, "fibo(%6s) = %40s\n", sn, sr);
@@ -181,7 +181,7 @@ bool tsumm(const SA_INT n, SA_INT *result) {
     bool no_ovf = true;
 #if 1
     for (SA_INT i=0; i<n; i++) {
-        if (add_overflow_reference(s, n)) {
+        if (sa_add_overflow_reference(s, n)) {
             no_ovf = false;
             break;
         } else {
