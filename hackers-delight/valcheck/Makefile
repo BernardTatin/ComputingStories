@@ -6,6 +6,8 @@
 # date:    2023 - 02 - 14
 #
 
+BITS ?= 128
+
 SRCDIR	:= ..
 SRCSA	:= ../safe-arithmetic
 SRCLIB	:= ../../lib/include
@@ -15,7 +17,7 @@ CC 		:=  clang-15	# gcc-12
 CCOPTIM := -fprofile-instr-generate -fcoverage-mapping
 CCDEBUG	:= -O2 -std=c2x
 CCINC 	:= -I$(SRCSA) -I$(SRCLIB) -I$(SRCTST)
-CCMORE	:= -s -Wall -Wextra -DBITS=128
+CCMORE	:= -s -Wall -Wextra -DBITS=$(BITS)
 CALL 	:= $(CCOPTIM) $(CCDEBUG) $(CCINC) $(CCMORE)
 
 VALMEM	:= --leak-check=full		\
