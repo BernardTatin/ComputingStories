@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #include "safe-arithmetic/safe-int-arith.h"
+#include "testing.h"
 
 // mainly for tests
 # if (BITS == 4) || (BITS == 8)
@@ -157,24 +158,6 @@ SA_INT iexp1(SA_INT x, SA_INT y) {
 #endif
 }
 
-static inline void il_free(char *ptr) {
-    //fprintf(stdout, "(                                           .) -- (%s)\n", ptr);
-    free(ptr);
-}
-
-
-void test_fibo() {
-    SA_INT n      = 1;
-    SA_INT result = 0;
-    while (sa_fibo(n, &result) == SA_OVF_OK) {
-        char *sn = sa_int_to_str(n);
-        char *sr = sa_int_to_str(result);
-        fprintf(stdout, "fibo(%6s) = %40s\n", sn, sr);
-        il_free(sr);
-        il_free(sn);
-        n++;
-    }
-}
 
 bool tsub(const SA_INT n, SA_INT *result) {
     SA_INT s = 0;
@@ -260,45 +243,6 @@ void test_perf_add_ovf(SA_INT imax) {
     free(si);
 }
 
-CONS_FUNC TSAOverflow sa_sfibo(const SA_INT n, SA_INT *rfibo) {
-    switch(n) {
-        case 0:
-            *rfibo = 0;
-            return SA_OVF_OK;
-        case 1:
-        case 2:
-            *rfibo = -1;
-            return SA_OVF_OK;
-        default:
-            break;
-    }
-    SA_INT      result = 1;
-    SA_INT      n1     = -1, n2 = 1;
-    for (SA_INT i      =2; i < n; i++) {
-        result = n1 - n2;
-        if (sa_has_sub_overflow_s(result, n1, n2)) {
-            return SA_OVF_OVERFLOW;
-        } else {
-            n1 = n2;
-            n2 = result;
-        }
-    }
-    *rfibo = result;
-    return SA_OVF_OK;
-}
-
-void test_sfibo() {
-    SA_INT r = 0;
-    SA_INT k = 0;
-    while (sa_sfibo(k, &r) == SA_OVF_OK) {
-        char *sk = sa_int_to_str(k);
-        char *sr = sa_int_to_str(r);
-        fprintf(stdout, "sfibo(%4s) = %40s\n", sk, sr);
-        free(sr);
-        free(sk);
-        k++;
-    }
-}
 void test_perf_sub_ovf(SA_INT imax) {
     SA_INT r = sa_imin;
     for (SA_INT i=0; i<imax; i++) {
@@ -314,21 +258,10 @@ void test_perf_sub_ovf(SA_INT imax) {
     free(si);
 }
 
-void test_print128bits(const int count) {
-    SA_INT n1 = sa_imin, n2 = 0;
-    for (int i=0; i<count; i++, n1++, n2++) {
-        char *s1 = sa_int_to_str(n1);
-        char *s2 = sa_int_to_str(n2);
-        fprintf(stdout, "%-45s %-45s\n", s1, s2);
-        free(s1);
-        free(s2);
-    }
-}
 int main() {
-#if 0
-    test_print128bits(4600);
-#else
-    test_sfibo();
-#endif
+    fprintf(stdout, "Main...\n");
+    test_fibo();
+    //test_print_bits(4600);
+    //test_sfibo();
     return 0;
 }

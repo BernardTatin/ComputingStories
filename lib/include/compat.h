@@ -13,16 +13,22 @@
     #define COMPAT_GCC
 #endif
 
-#if defined(COMPAT_GCC)
 #include <stdbool.h>
-#endif
 
-#if defined(COMPAT_CLANG) || defined(COMPAT_GCC)
+//  these attributes are dangerous, mostly with gcc
+// use them with caution
+#if defined(COMPAT_CLANG)   // || defined(COMPAT_GCC)
     #define PURE_FUNC __attribute__((pure))
     #define CONS_FUNC __attribute__((const))
 #else
     #define PURE_FUNC
     #define CONS_FUNC
+#endif
+
+#if defined(COMPAT_CLANG)
+#define MUSTTAIL	__attribute__((musttail))
+#else
+#define MUSTTAIL
 #endif
 
 #if !defined(SCONST)

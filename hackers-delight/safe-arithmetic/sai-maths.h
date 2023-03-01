@@ -19,5 +19,6 @@
 #define HACKERS_DELIGHT_SAI_MATHS_H
 
 CONS_FUNC TSAOverflow sa_fibo(const SA_INT n, SA_INT *result);
+CONS_FUNC TSAOverflow sa_fibo_r(const SA_INT n, SA_INT *result);
 
 #endif //HACKERS_DELIGHT_SAI_MATHS_H
