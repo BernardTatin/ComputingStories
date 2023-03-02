@@ -12,7 +12,7 @@ add_executable(hackers_delight
         safe-arithmetic/sai-maths.h
         safe-arithmetic/sai-maths.c safe-arithmetic/sai-string.h
         testing/testing.h
-        testing/tstrings.c testing/tfibo.c testing/toverflows.c)
+        testing/tstrings.c testing/tfibo.c testing/toverflows.c safe-arithmetic/sai_overflow.c)
 
 target_include_directories(hackers_delight PUBLIC
         ./safe-arithmetic

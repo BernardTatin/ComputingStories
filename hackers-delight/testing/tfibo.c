@@ -42,13 +42,14 @@ static CONS_FUNC TSAOverflow sa_sfibo(const SA_INT n, SA_INT *rfibo) {
 static void exec_test_fibo_r(
 		TSAOverflow (*sa_fibo)(const SA_INT n, SA_INT *result),
         char *prompt) {
+    int km = 200;
     SA_INT n      = 0;
     SA_INT result = 0;
 	fprintf(stdout, "exec_test_fibo_r with prompt <%s>\n", prompt);
-    while (sa_fibo(n, &result) == SA_OVF_OK) {
+    while (sa_fibo(n, &result) == SA_OVF_OK && (km-- > 0)) {
         char *sn = sa_int_to_str(n);
         char *sr = sa_int_to_str(result);
-        fprintf(stdout, "%s fibo %s = %s\n", prompt, sn, sr);
+        fprintf(stdout, "%s %s = %s\n", prompt, sn, sr);
         free(sr);
         free(sn);
         n++;
@@ -57,8 +58,9 @@ static void exec_test_fibo_r(
 
 void test_fibo() {
     fprintf(stdout, "test_fibo() ...\n");
-    exec_test_fibo_r(sa_fibo, ". ");
-    exec_test_fibo_r(sa_fibo_r, "r ");
+    exec_test_fibo_r(sa_fibo, ". fibo");
+    exec_test_fibo_r(sa_fibo_r, "r fibo");
+    exec_test_fibo_r(sa_fact, ". fact");
 }
 
 void test_sfibo() {

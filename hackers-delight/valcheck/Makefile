@@ -5,19 +5,37 @@
 # author:  bernard
 # date:    2023 - 02 - 14
 #
+# Usage:
+# 	cc=clang|gcc BITS=4|8|16|32|64|128 make clean all
+# defaults:
+# 	cc=clang
+#	BITS=128
+#
+## NOTE:
+## 	valgrind does not like clang debug info.
+##
 
-BITS ?= 128
+BITS 	?= 128
 
 SRCDIR	:= ..
 SRCSA	:= ../safe-arithmetic
 SRCLIB	:= ../../lib/include
 SRCTST	:= ../testing
 
+cc		?= clang
+
+ifeq ($(cc),clang)
 CC 		:=  clang-15	# gcc-12
-CCOPTIM := -fprofile-instr-generate -fcoverage-mapping
-CCDEBUG	:= -O2 -std=c2x
+#CCOPTIM := -O2 -fprofile-instr-generate -fcoverage-mapping -ftrapv -fno-omit-frame-pointer
+CCOPTIM := -O3 -fno-omit-frame-pointer
+else ifeq($(cc),gcc)
+CC		:= gcc-12
+CCOPTIM	:= -O2 -ggdb3 -free -fstrict-aliasing -flto
+endif
+
+CCDEBUG	:= -std=c2x
 CCINC 	:= -I$(SRCSA) -I$(SRCLIB) -I$(SRCTST)
-CCMORE	:= -s -Wall -Wextra -DBITS=$(BITS)
+CCMORE	:= -Wall -Wextra -DBITS=$(BITS) # -s
 CALL 	:= $(CCOPTIM) $(CCDEBUG) $(CCINC) $(CCMORE)
 
 VALMEM	:= --leak-check=full		\
@@ -33,10 +51,9 @@ VALLOGP := callgrind.txt
 
 DEPS	:= $(SRCLIB)/compat.h $(SRCSA)/safe-int-arith.h \
 			$(SRCTST)/testing.h
-SRCs	:= $(SRCSA)/sai-maths.c $(SRCSA)/sai-string.c $(SRCDIR)/main.c \
-			$(SRCTST)/tfibo.c \
-                      $(SRCTST)/toverflows.c \
-                      $(SRCTST)/tstrings.c
+SRCs	:= $(SRCSA)/sai-maths.c $(SRCSA)/sai-string.c $(SRCSA)/sai_overflow.c \
+			$(SRCDIR)/main.c \
+			$(SRCTST)/tfibo.c $(SRCTST)/toverflows.c $(SRCTST)/tstrings.c
 
 
 BINARY	:= hack-delights.bin

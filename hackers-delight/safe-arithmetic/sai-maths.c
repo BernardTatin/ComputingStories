@@ -9,6 +9,27 @@
 #include <stdio.h>
 #include "safe-int-arith.h"
 
+CONS_FUNC TSAOverflow sa_fact(const SA_INT n, SA_INT *result) {
+    if (n <= 2) {
+        if (n == 0) {
+            *result = 1;
+        } else {
+            *result = n;
+        }
+        return SA_OVF_OK;
+    }
+    SA_INT r = 1;
+    for (SA_INT i = 2; i<=n; i++) {
+        r *= i;
+        if (sa_has_mul_overflow(r, i)) {
+            *result = r;
+            return SA_OVF_OVERFLOW;
+        }
+    }
+    *result = r;
+    return SA_OVF_OK;
+}
+
 CONS_FUNC TSAOverflow sa_fibo(const SA_INT n, SA_INT *rfibo) {
     if (n < (SA_INT)2) {
         *rfibo = n;
@@ -29,7 +50,7 @@ CONS_FUNC TSAOverflow sa_fibo(const SA_INT n, SA_INT *rfibo) {
     return SA_OVF_OK;
 }
 
-static TSAOverflow inner_fibo(const int cpt,
+TSAOverflow inner_fibo(const int cpt,
                                         const SA_INT n1,
                                         const SA_INT n2,
                                         SA_INT *r) {

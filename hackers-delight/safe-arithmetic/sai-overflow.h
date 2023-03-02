@@ -138,5 +138,11 @@ INLINE CONS_FUNC TSAOverflow sa_sub(const SA_INT x, const SA_INT y, SA_INT *resu
     }
 }
 
+int nlz(const SA_INT x);
+INLINE CONS_FUNC bool sa_has_mul_overflow(const SA_INT x, const SA_INT y) {
+    int n = nlz(x) + nlz(y);
+    return n < (BITS - 1);
+}
+
 
 #endif //HACKERS_DELIGHT_SAI_OVERFLOW_H
