@@ -11,8 +11,12 @@
 # 	cc=clang
 #	BITS=128
 #
-## NOTE:
-## 	valgrind does not like clang debug info.
+## NOTE for clang:
+## 	valgrind does not like clang debug info but
+## 	give some good results with  -fno-omit-frame-pointer
+##
+## NOTE for gcc:
+##	total failure with -O2 or -O3, works with -01
 ##
 
 BITS 	?= 128
@@ -23,14 +27,24 @@ SRCLIB	:= ../../lib/include
 SRCTST	:= ../testing
 
 cc		?= clang
+os		:= $(shell uname)
 
 ifeq ($(cc),clang)
-CC 		:=  clang-15	# gcc-12
+ifeq ($(os),FreeBSD)
+CC 		:=  clang15
+else
+CC 		:=  clang-15
+endif
 #CCOPTIM := -O2 -fprofile-instr-generate -fcoverage-mapping -ftrapv -fno-omit-frame-pointer
 CCOPTIM := -O3 -fno-omit-frame-pointer
-else ifeq($(cc),gcc)
-CC		:= gcc-12
-CCOPTIM	:= -O2 -ggdb3 -free -fstrict-aliasing -flto
+endif
+ifeq ($(cc),gcc)
+ifeq ($(os),FreeBSD)
+CC 		:=  gcc12
+else
+CC 		:=  gcc-12
+endif
+CCOPTIM	:= -O1 -ggdb3 -free -fstrict-aliasing -flto
 endif
 
 CCDEBUG	:= -std=c2x
@@ -64,6 +78,7 @@ all: memory performances
 bin: $(BINARY)
 
 $(BINARY): $(SRCs) $(DEPS)
+	@echo "running on $(os)"
 	$(CC) -o $@ $(CALL) $(SRCs)
 
 memory: $(BINARY)

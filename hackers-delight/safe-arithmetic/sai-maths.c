@@ -47,14 +47,14 @@ CONS_FUNC TSAOverflow sa_fibo(const SA_INT n, SA_INT *rfibo) {
         }
     }
     *rfibo = result;
-    return SA_OVF_OK;
+	return SA_OVF_OK;
 }
 
 TSAOverflow inner_fibo(const int cpt,
                                         const SA_INT n1,
                                         const SA_INT n2,
                                         SA_INT *r) {
-    if (cpt == 0) {
+    if (cpt == 1) {
         return SA_OVF_OK;
     }
     SA_INT s = n1 + n2;
