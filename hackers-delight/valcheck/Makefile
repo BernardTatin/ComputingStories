@@ -49,7 +49,7 @@ endif
 
 CCDEBUG	:= -std=c2x
 CCINC 	:= -I$(SRCSA) -I$(SRCLIB) -I$(SRCTST)
-CCMORE	:= -Wall -Wextra -DBITS=$(BITS) # -s
+CCMORE	:= -Wall -Wextra -DBITS=$(BITS)
 CALL 	:= $(CCOPTIM) $(CCDEBUG) $(CCINC) $(CCMORE)
 
 VALMEM	:= --leak-check=full		\
